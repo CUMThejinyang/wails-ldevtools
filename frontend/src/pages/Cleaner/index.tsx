@@ -66,7 +66,6 @@ export default function CleanerPage() {
 
   const addFolder = (folder: FolderConfig) => {
     save({ ...settings, folders: [...settings.folders, folder] })
-    setShowAddModal(false)
   }
 
   const removeFolder = (id: string) =>
@@ -271,6 +270,15 @@ function AddFolderModal({ onConfirm, onCancel }: {
       deleteFolder,
       enabled: true,
     })
+    // 添加成功后重置表单，方便继续添加
+    setPath('')
+    setName('')
+    setPatterns('')
+    setRecursive(true)
+    setDeleteEmptyDirs(true)
+    setDeleteFolder(true)
+    setError('')
+    inputRef.current?.focus()
   }
 
   return (

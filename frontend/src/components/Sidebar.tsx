@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { PageId } from '../types'
 import Tooltip from './Tooltip'
 
@@ -54,11 +54,16 @@ interface Props {
 export default function Sidebar({ activePage, onNavigate, theme, onToggleTheme }: Props) {
   const [hovered, setHovered] = useState<string | null>(null)
 
+  // 主题切换时重置 hover 状态，避免残留样式
+  useEffect(() => { setHovered(null) }, [theme])
+
   const iconBtnBase: React.CSSProperties = {
     width: 36,
     height: 36,
     borderRadius: '50%',
-    border: '0.5px solid transparent',
+    borderWidth: 0.5,
+    borderStyle: 'solid',
+    borderColor: 'transparent',
     backgroundColor: 'transparent',
     display: 'flex',
     alignItems: 'center',
@@ -77,7 +82,7 @@ export default function Sidebar({ activePage, onNavigate, theme, onToggleTheme }
     }
     if (hovered === id) return {
       ...iconBtnBase,
-      backgroundColor: 'rgba(255,255,255,0.1)',
+      backgroundColor: 'var(--color-hover)',
       borderColor: 'var(--color-border-soft)',
       opacity: 0.9,
     }
