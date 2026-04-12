@@ -15,7 +15,6 @@ export default function TitleBar() {
   const [isMaximised, setIsMaximised] = useState(false)
   const [isPinned, setIsPinned] = useState(false)
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null)
-  const [controlsHovered, setControlsHovered] = useState(false)
 
   useEffect(() => {
     const check = async () => {
@@ -49,31 +48,27 @@ export default function TitleBar() {
   return (
     <div style={styles.bar}>
       {/* 拖拽区域 + 双击最大化 */}
-      <div style={styles.drag} onDoubleClick={handleDoubleClick}>
+      <div style={styles.drag} onDoubleClick={handleDoubleClick}
+        onMouseDown={(e) => { (e.currentTarget as HTMLElement).style.cursor = 'grabbing' }}
+        onMouseUp={(e) => { (e.currentTarget as HTMLElement).style.cursor = 'grab' }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.cursor = 'grab' }}
+      >
         <span style={styles.title}>DevTools</span>
       </div>
 
       {/* 右侧按钮组 */}
-      <div
-        style={styles.controls}
-        onMouseEnter={() => setControlsHovered(true)}
-        onMouseLeave={() => { setControlsHovered(false); setHoveredBtn(null) }}
-      >
+      <div style={styles.controls}>
         {/* 置顶 */}
         <Tooltip text={isPinned ? '取消置顶' : '置顶'}>
           <button
-            style={styles.pinBtn}
+            className="btn-pin"
             onClick={togglePin}
             onMouseEnter={() => setHoveredBtn('pin')}
             onMouseLeave={() => setHoveredBtn(null)}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isPinned ? 'var(--color-primary)' : (hoveredBtn === 'pin' ? 'var(--color-text-2)' : 'var(--color-text-3)')} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2L12 14" />
-              <path d="M8 6L16 6" />
-              <path d="M9 14L15 14" />
-              <path d="M10 14L10 20" />
-              <path d="M14 14L14 20" />
-              <line x1="10" y1="20" x2="14" y2="20" />
+              <line x1="12" y1="17" x2="12" y2="22" />
+              <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" />
             </svg>
           </button>
         </Tooltip>
@@ -83,8 +78,9 @@ export default function TitleBar() {
         {/* 最小化 */}
         <Tooltip text="最小化">
           <button
-            style={dotStyle('min', controlsHovered, hoveredBtn === 'min')}
+            style={dotStyle('min', hoveredBtn === 'min')}
             onMouseEnter={() => setHoveredBtn('min')}
+            onMouseLeave={() => setHoveredBtn(null)}
             onClick={() => bridge.windowMinimise()}
           />
         </Tooltip>
@@ -92,8 +88,9 @@ export default function TitleBar() {
         {/* 最大化 / 还原 */}
         <Tooltip text={isMaximised ? '还原' : '最大化'}>
           <button
-            style={dotStyle('max', controlsHovered, hoveredBtn === 'max')}
+            style={dotStyle('max', hoveredBtn === 'max')}
             onMouseEnter={() => setHoveredBtn('max')}
+            onMouseLeave={() => setHoveredBtn(null)}
             onClick={async () => {
               await bridge.windowToggleMaximise()
               const m = await bridge.windowIsMaximised()
@@ -105,8 +102,9 @@ export default function TitleBar() {
         {/* 关闭 */}
         <Tooltip text="关闭">
           <button
-            style={dotStyle('close', controlsHovered, hoveredBtn === 'close')}
+            style={dotStyle('close', hoveredBtn === 'close')}
             onMouseEnter={() => setHoveredBtn('close')}
+            onMouseLeave={() => setHoveredBtn(null)}
             onClick={() => bridge.windowClose()}
           />
         </Tooltip>
@@ -115,16 +113,15 @@ export default function TitleBar() {
   )
 }
 
-function dotStyle(id: keyof typeof COLORS, active: boolean, hovered: boolean): React.CSSProperties {
+function dotStyle(id: keyof typeof COLORS, hovered: boolean): React.CSSProperties {
   return {
     width: 16,
     height: 16,
     borderRadius: '50%',
     border: 'none',
-    backgroundColor: active ? COLORS[id] : DIM,
-    opacity: hovered ? 1 : (active ? 0.85 : 1),
+    backgroundColor: hovered ? COLORS[id] : DIM,
     cursor: 'pointer',
-    transition: 'background-color 0.15s, opacity 0.15s',
+    transition: 'background-color 0.15s',
     flexShrink: 0,
     padding: 0,
   }
@@ -148,7 +145,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     paddingLeft: 14,
     height: '100%',
-    cursor: 'default',
+    cursor: 'grab',
     '--wails-draggable': 'drag',
   } as React.CSSProperties,
   title: {
@@ -170,16 +167,5 @@ const styles: Record<string, React.CSSProperties> = {
     height: 16,
     backgroundColor: 'var(--color-border)',
     margin: '0 2px',
-  },
-  pinBtn: {
-    border: 'none',
-    backgroundColor: 'transparent',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 4,
-    flexShrink: 0,
-    transition: 'color 0.15s',
   },
 }

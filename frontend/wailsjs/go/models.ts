@@ -81,3 +81,52 @@ export namespace cleaner {
 
 }
 
+export namespace syncer {
+	
+	export class Config {
+	    src: string;
+	    dst: string;
+	    conflict: string;
+	    recursive: boolean;
+	    patterns: string[];
+	    threadCount: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Config(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.src = source["src"];
+	        this.dst = source["dst"];
+	        this.conflict = source["conflict"];
+	        this.recursive = source["recursive"];
+	        this.patterns = source["patterns"];
+	        this.threadCount = source["threadCount"];
+	    }
+	}
+	export class PreviewItem {
+	    relativePath: string;
+	    srcPath: string;
+	    dstPath: string;
+	    size: number;
+	    status: string;
+	    error?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PreviewItem(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.relativePath = source["relativePath"];
+	        this.srcPath = source["srcPath"];
+	        this.dstPath = source["dstPath"];
+	        this.size = source["size"];
+	        this.status = source["status"];
+	        this.error = source["error"];
+	    }
+	}
+
+}
+

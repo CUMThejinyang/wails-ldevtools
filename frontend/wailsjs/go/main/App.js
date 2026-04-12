@@ -10,6 +10,10 @@ export function GetDirSize(arg1) {
   return window['go']['main']['App']['GetDirSize'](arg1);
 }
 
+export function GetSyncConfig() {
+  return window['go']['main']['App']['GetSyncConfig']();
+}
+
 export function GetTheme() {
   return window['go']['main']['App']['GetTheme']();
 }
@@ -18,12 +22,28 @@ export function IsCleanRunning() {
   return window['go']['main']['App']['IsCleanRunning']();
 }
 
+export function IsSyncRunning() {
+  return window['go']['main']['App']['IsSyncRunning']();
+}
+
 export function PreviewClean(arg1) {
   return window['go']['main']['App']['PreviewClean'](arg1);
 }
 
+export function PreviewSync(arg1) {
+  return window['go']['main']['App']['PreviewSync'](arg1);
+}
+
+export function ResolveSyncConflict(arg1) {
+  return window['go']['main']['App']['ResolveSyncConflict'](arg1);
+}
+
 export function SaveCleanerSettings(arg1) {
   return window['go']['main']['App']['SaveCleanerSettings'](arg1);
+}
+
+export function SaveSyncConfig(arg1) {
+  return window['go']['main']['App']['SaveSyncConfig'](arg1);
 }
 
 export function SelectDirectory() {
@@ -38,8 +58,16 @@ export function StartClean(arg1) {
   return window['go']['main']['App']['StartClean'](arg1);
 }
 
+export function StartSync(arg1) {
+  return window['go']['main']['App']['StartSync'](arg1);
+}
+
 export function StopClean() {
   return window['go']['main']['App']['StopClean']();
+}
+
+export function StopSync() {
+  return window['go']['main']['App']['StopSync']();
 }
 
 export function WindowClose() {

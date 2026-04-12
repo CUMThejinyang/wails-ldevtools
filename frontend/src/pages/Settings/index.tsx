@@ -27,10 +27,7 @@ export default function SettingsPage({ theme, onToggleTheme }: Props) {
           ].map((item) => (
             <button
               key={item.id}
-              style={{
-                ...styles.sidebarItem,
-                ...(activeSection === item.id ? styles.sidebarItemActive : {}),
-              }}
+              className={`btn-settings-item${activeSection === item.id ? ' active' : ''}`}
               onClick={() => setActiveSection(item.id as typeof activeSection)}
             >
               {item.label}
@@ -56,6 +53,7 @@ function GeneralSettings({ theme, onToggleTheme }: { theme: string; onToggleThem
     <div style={styles.section}>
       <div style={styles.sectionTitle}>外观</div>
 
+
       <div style={styles.settingRow}>
         <div>
           <div style={styles.settingLabel}>主题</div>
@@ -65,10 +63,7 @@ function GeneralSettings({ theme, onToggleTheme }: { theme: string; onToggleThem
           {(['dark', 'light'] as const).map((t) => (
             <button
               key={t}
-              style={{
-                ...styles.themeBtn,
-                ...(theme === t ? styles.themeBtnActive : {}),
-              }}
+              className={`btn-theme${theme === t ? ' active' : ''}`}
               onClick={() => theme !== t && onToggleTheme()}
             >
               {t === 'dark' ? '🌙 暗色' : '☀️ 亮色'}
@@ -139,26 +134,12 @@ const styles: Record<string, React.CSSProperties> = {
   title: { fontSize: 15, fontWeight: 600, color: 'var(--color-text-1)' },
   body: { display: 'flex', flex: 1, overflow: 'hidden' },
   settingsSidebar: {
-    width: 160, minWidth: 160,
+    width: 180, minWidth: 160,
     borderRight: '0.5px solid var(--color-border)',
+    height:"100vh",
     padding: '12px 8px',
     display: 'flex', flexDirection: 'column', gap: 2,
     backgroundColor: 'var(--color-background-soft)',
-  },
-  sidebarItem: {
-    display: 'block', width: '100%',
-    padding: '8px 12px',
-    borderRadius: 7, border: 'none',
-    backgroundColor: 'transparent',
-    color: 'var(--color-text-2)',
-    fontSize: 13, textAlign: 'left',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s, color 0.15s',
-  },
-  sidebarItemActive: {
-    backgroundColor: 'var(--color-primary-mute)',
-    color: 'var(--color-primary)',
-    fontWeight: 500,
   },
   settingsContent: { flex: 1, overflow: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 20 },
   section: {
@@ -182,20 +163,6 @@ const styles: Record<string, React.CSSProperties> = {
   settingLabel: { fontSize: 13, color: 'var(--color-text-1)', fontWeight: 500, marginBottom: 2 },
   settingDesc: { fontSize: 12, color: 'var(--color-text-3)' },
   themeToggle: { display: 'flex', gap: 6 },
-  themeBtn: {
-    padding: '6px 14px', borderRadius: 7,
-    border: '0.5px solid var(--color-border)',
-    backgroundColor: 'transparent',
-    color: 'var(--color-text-2)',
-    fontSize: 13, cursor: 'pointer',
-    transition: 'all 0.15s',
-  },
-  themeBtnActive: {
-    backgroundColor: 'var(--color-primary-mute)',
-    borderColor: 'var(--color-primary)',
-    color: 'var(--color-primary)',
-    fontWeight: 500,
-  },
   aboutCard: {
     display: 'flex', alignItems: 'center', gap: 16,
     padding: '16px 16px',

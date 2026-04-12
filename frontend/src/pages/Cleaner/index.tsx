@@ -113,15 +113,15 @@ export default function CleanerPage() {
           {enabledCount > 0 && <span style={styles.badge}>{enabledCount} 个</span>}
         </div>
         <div style={styles.headerRight}>
-          <button style={styles.btnDefault} onClick={() => setShowAddModal(true)}>
+          <button className="btn btn-default" onClick={() => setShowAddModal(true)}>
             <Ico.Plus />添加文件夹
           </button>
           {!running
             ? <button
-                style={{ ...styles.btnPrimary, ...(enabledCount === 0 ? styles.btnDisabled : {}) }}
+                className="btn btn-primary"
                 onClick={startClean} disabled={enabledCount === 0}
               ><Ico.Play />开始清理</button>
-            : <button style={styles.btnDanger} onClick={() => bridge.stopClean()}>
+            : <button className="btn btn-danger" onClick={() => bridge.stopClean()}>
                 <Ico.Stop />停止
               </button>
           }
@@ -132,7 +132,7 @@ export default function CleanerPage() {
       <div style={styles.tabs}>
         {(['config', 'progress', 'result'] as const).map((tab) => (
           <button key={tab}
-            style={{ ...styles.tab, ...(activeTab === tab ? styles.tabActive : {}) }}
+            className={`btn-tab${activeTab === tab ? ' active' : ''}`}
             onClick={() => setActiveTab(tab)}
           >
             {{ config: '📁 文件夹配置', progress: `⚡ 清理进度${running ? ' ●' : ''}`, result: '📊 清理结果' }[tab]}
@@ -286,7 +286,7 @@ function AddFolderModal({ onConfirm, onCancel }: {
       <div style={modal}>
         <div style={modalHeader}>
           <span style={{ fontWeight: 600, color: 'var(--color-text-1)' }}>添加文件夹</span>
-          <button style={closeBtn} onClick={onCancel}><Ico.X /></button>
+          <button className="btn-close" onClick={onCancel}><Ico.X /></button>
         </div>
 
         <div style={modalBody}>
@@ -303,7 +303,7 @@ function AddFolderModal({ onConfirm, onCancel }: {
                 onKeyDown={(e) => e.key === 'Enter' && confirm()}
                 autoFocus
               />
-              <button style={browseBtn} onClick={browse}>
+              <button className="btn-browse" onClick={browse}>
                 <Ico.Folder /> 浏览
               </button>
             </div>
@@ -363,8 +363,8 @@ function AddFolderModal({ onConfirm, onCancel }: {
         </div>
 
         <div style={modalFooter}>
-          <button style={styles.btnDefault} onClick={onCancel}>取消</button>
-          <button style={styles.btnPrimary} onClick={confirm}>
+          <button className="btn btn-default" onClick={onCancel}>取消</button>
+          <button className="btn btn-primary" onClick={confirm}>
             <Ico.Plus /> 添加
           </button>
         </div>
@@ -415,7 +415,7 @@ function FolderCard({ folder, expanded, onToggleExpand, onToggleEnabled, onUpdat
   return (
     <div style={{ ...styles.card, ...(!folder.enabled ? styles.cardDisabled : {}) }}>
       <div style={styles.cardHeader}>
-        <button style={styles.expandBtn} onClick={onToggleExpand}>
+        <button className="btn-expand" onClick={onToggleExpand}>
           <Ico.Chevron up={expanded} />
         </button>
         <div style={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={onToggleExpand}>
@@ -436,9 +436,9 @@ function FolderCard({ folder, expanded, onToggleExpand, onToggleEnabled, onUpdat
           {/* 启用开关 */}
           <Tooltip text={folder.enabled ? '禁用' : '启用'}>
             <button
+              className="btn-icon"
               onClick={onToggleEnabled}
               style={{
-                ...styles.iconBtn,
                 color: folder.enabled ? 'var(--color-primary)' : 'var(--color-text-3)',
                 backgroundColor: folder.enabled ? 'var(--color-primary-mute)' : 'transparent',
               }}
@@ -448,10 +448,8 @@ function FolderCard({ folder, expanded, onToggleExpand, onToggleEnabled, onUpdat
           </Tooltip>
           <Tooltip text="删除">
             <button
+              className="btn-icon btn-icon-danger"
               onClick={onRemove}
-              style={{ ...styles.iconBtn, color: 'var(--color-text-3)' }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-error)')}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-text-3)')}
             >
               <Ico.X />
             </button>
@@ -630,12 +628,6 @@ const modalFooter: React.CSSProperties = {
   borderTop: '0.5px solid var(--color-border)',
   flexShrink: 0,
 }
-const closeBtn: React.CSSProperties = {
-  width: 26, height: 26, borderRadius: '50%',
-  border: 'none', backgroundColor: 'transparent',
-  color: 'var(--color-text-3)', cursor: 'pointer',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-}
 const formRow: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
 const formLabel: React.CSSProperties = { fontSize: 12, color: 'var(--color-text-2)', fontWeight: 500 }
 const inputStyle: React.CSSProperties = {
@@ -649,15 +641,6 @@ const inputStyle: React.CSSProperties = {
   width: '100%',
   userSelect: 'text',
   WebkitUserSelect: 'text',
-}
-const browseBtn: React.CSSProperties = {
-  display: 'flex', alignItems: 'center', gap: 5,
-  padding: '7px 12px', borderRadius: 7,
-  border: '0.5px solid var(--color-border)',
-  backgroundColor: 'var(--color-background-mute)',
-  color: 'var(--color-text-2)',
-  cursor: 'pointer', fontSize: 13, flexShrink: 0,
-  whiteSpace: 'nowrap',
 }
 
 // ── 页面样式 ──
@@ -703,20 +686,9 @@ const styles: Record<string, React.CSSProperties> = {
   card: { borderBottom: '0.5px solid var(--color-border-soft)', transition: 'opacity 0.2s' },
   cardDisabled: { opacity: 0.42 },
   cardHeader: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px' },
-  expandBtn: { width: 22, height: 22, border: 'none', backgroundColor: 'transparent', color: 'var(--color-text-3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, flexShrink: 0 },
   cardBody: { padding: '4px 12px 14px 42px', display: 'flex', flexDirection: 'column', gap: 10, backgroundColor: 'var(--color-background)' },
-  iconBtn: {
-    width: 28, height: 28, border: 'none', backgroundColor: 'transparent',
-    cursor: 'pointer', borderRadius: 6,
-    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'color 0.15s',
-  },
   // 进度卡
   progressCard: { backgroundColor: 'var(--color-background-soft)', border: '0.5px solid var(--color-border)', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 },
-  // 按钮
-  btnPrimary: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 7, backgroundColor: 'var(--color-primary)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500 },
-  btnDefault: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 7, backgroundColor: 'transparent', border: '0.5px solid var(--color-border)', color: 'var(--color-text-2)', cursor: 'pointer', fontSize: 13 },
-  btnDanger: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 7, backgroundColor: 'var(--color-error)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500 },
-  btnDisabled: { opacity: 0.4, cursor: 'not-allowed' },
 }
 
 function generateId() { return Math.random().toString(36).slice(2, 11) }

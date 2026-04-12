@@ -52,7 +52,30 @@ export interface PreviewItem {
 }
 
 // 可扩展：在此添加新页面 ID
-export type PageId = 'cleaner' | 'settings'
+export type PageId = 'cleaner' | 'sync' | 'settings'
+
+// ── Sync ──
+export type ConflictMode = 'overwrite' | 'skip' | 'ask'
+
+export interface SyncConfig {
+  src: string
+  dst: string
+  conflict: ConflictMode
+  recursive: boolean
+  patterns: string[]   // 空 = 全部
+  threadCount: number
+}
+
+export type SyncFileStatus = 'new' | 'modified' | 'identical' | 'pending' | 'syncing' | 'synced' | 'skipped' | 'error'
+
+export interface SyncPreviewItem {
+  relativePath: string
+  srcPath: string
+  dstPath: string
+  size: number
+  status: SyncFileStatus   // preview 阶段: new | modified | identical
+  error?: string
+}
 
 export interface NavItem {
   id: PageId

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { KeepAlive } from 'react-activation'
 import Sidebar from './components/Sidebar'
 import TitleBar from './components/TitleBar'
 import CleanerPage from './pages/Cleaner'
+import SyncPage from './pages/Sync'
 import SettingsPage from './pages/Settings'
 import { bridge } from './hooks/bridge'
 import type { PageId } from './types'
@@ -27,11 +29,6 @@ export default function App() {
     try { await bridge.setTheme(next) } catch {}
   }
 
-  const pageTitles: Record<PageId, string> = {
-    cleaner:  '文件夹清理工具',
-    settings: '设置',
-  }
-
   return (
     <div style={styles.root}>
       {/* 自定义标题栏（最顶层，横跨全宽） */}
@@ -47,17 +44,9 @@ export default function App() {
         />
 
         <main style={styles.main}>
-          {/* 二级 Navbar */}
-          <div style={styles.navbar}>
-            <span style={styles.pageTitle}>{pageTitles[activePage]}</span>
-            <span style={styles.version}>v1.0.0</span>
-          </div>
-
-          {/* 页面内容 */}
-          <div style={styles.content}>
-            {activePage === 'cleaner'  && <CleanerPage />}
-            {activePage === 'settings' && <SettingsPage theme={theme} onToggleTheme={toggleTheme} />}
-          </div>
+          {activePage === 'cleaner'  && <KeepAlive id="cleaner"><CleanerPage /></KeepAlive>}
+          {activePage === 'sync'     && <KeepAlive id="sync"><SyncPage /></KeepAlive>}
+          {activePage === 'settings' && <KeepAlive id="settings"><SettingsPage theme={theme} onToggleTheme={toggleTheme} /></KeepAlive>}
         </main>
       </div>
     </div>
@@ -87,32 +76,5 @@ const styles: Record<string, React.CSSProperties> = {
     borderLeft: '0.5px solid var(--color-border)',
     borderTop: '0.5px solid var(--color-border)',
     backgroundColor: 'var(--color-background)',
-  },
-  navbar: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 44,
-    minHeight: 44,
-    padding: '0 20px',
-    backgroundColor: 'var(--navbar-bg)',
-    borderBottom: '0.5px solid var(--color-border)',
-    flexShrink: 0,
-  },
-  pageTitle: {
-    fontSize: 13,
-    fontWeight: 600,
-    color: 'var(--color-text-2)',
-  },
-  version: {
-    fontSize: 11,
-    color: 'var(--color-text-3)',
-    fontFamily: 'var(--code-font-family)',
-  },
-  content: {
-    flex: 1,
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
   },
 }

@@ -38,10 +38,18 @@ const Icons = {
   ),
 }
 
+// 同步图标
+const SyncIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+    <path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+  </svg>
+)
+
 // 导航项配置——只需在此扩展
 const NAV_ITEMS: { id: PageId; icon: React.ReactNode; label: string }[] = [
-  { id: 'cleaner',  icon: <Icons.Trash />,    label: '文件夹清理' },
-  // { id: 'formatter', icon: ..., label: '代码格式化' },
+  { id: 'cleaner', icon: <Icons.Trash />, label: '文件夹清理' },
+  { id: 'sync',    icon: <SyncIcon />,    label: '文件夹同步' },
 ]
 
 interface Props {
@@ -53,9 +61,10 @@ interface Props {
 
 export default function Sidebar({ activePage, onNavigate, theme, onToggleTheme }: Props) {
   const [hovered, setHovered] = useState<string | null>(null)
+  const [pressed, setPressed] = useState<string | null>(null)
 
   // 主题切换时重置 hover 状态，避免残留样式
-  useEffect(() => { setHovered(null) }, [theme])
+  useEffect(() => { setHovered(null); setPressed(null) }, [theme])
 
   const iconBtnBase: React.CSSProperties = {
     width: 36,
@@ -75,18 +84,11 @@ export default function Sidebar({ activePage, onNavigate, theme, onToggleTheme }
   } as React.CSSProperties
 
   const getIconBtnStyle = (id: string, isActive = false): React.CSSProperties => {
-    if (isActive) return {
-      ...iconBtnBase,
-      backgroundColor: 'var(--color-background)',
-      borderColor: 'var(--color-border)',
-    }
-    if (hovered === id) return {
-      ...iconBtnBase,
-      backgroundColor: 'var(--color-hover)',
-      borderColor: 'var(--color-border-soft)',
-      opacity: 0.9,
-    }
-    return iconBtnBase
+    const base = { ...iconBtnBase }
+    if (pressed === id) return { ...base, backgroundColor: 'var(--color-active)', transform: 'scale(0.88)', borderColor: 'var(--color-border-soft)' }
+    if (isActive) return { ...base, backgroundColor: 'var(--color-background)', borderColor: 'var(--color-border)' }
+    if (hovered === id) return { ...base, backgroundColor: 'var(--color-hover)', borderColor: 'var(--color-border-soft)', opacity: 0.9 }
+    return base
   }
 
   const getIconColor = (id: string, isActive = false): string => {
@@ -111,7 +113,9 @@ export default function Sidebar({ activePage, onNavigate, theme, onToggleTheme }
               <button
                 style={getIconBtnStyle(item.id, isActive)}
                 onMouseEnter={() => setHovered(item.id)}
-                onMouseLeave={() => setHovered(null)}
+                onMouseLeave={() => { setHovered(null); setPressed(null) }}
+                onMouseDown={() => setPressed(item.id)}
+                onMouseUp={() => setPressed(null)}
                 onClick={() => onNavigate(item.id)}
               >
                 <span style={{ color: getIconColor(item.id, isActive), display: 'flex' }}>
@@ -130,7 +134,9 @@ export default function Sidebar({ activePage, onNavigate, theme, onToggleTheme }
           <button
             style={getIconBtnStyle('theme')}
             onMouseEnter={() => setHovered('theme')}
-            onMouseLeave={() => setHovered(null)}
+            onMouseLeave={() => { setHovered(null); setPressed(null) }}
+            onMouseDown={() => setPressed('theme')}
+            onMouseUp={() => setPressed(null)}
             onClick={onToggleTheme}
           >
             <span style={{ color: getIconColor('theme'), display: 'flex' }}>
@@ -144,7 +150,9 @@ export default function Sidebar({ activePage, onNavigate, theme, onToggleTheme }
           <button
             style={getIconBtnStyle('settings', activePage === 'settings')}
             onMouseEnter={() => setHovered('settings')}
-            onMouseLeave={() => setHovered(null)}
+            onMouseLeave={() => { setHovered(null); setPressed(null) }}
+            onMouseDown={() => setPressed('settings')}
+            onMouseUp={() => setPressed(null)}
             onClick={() => onNavigate('settings')}
           >
             <span style={{ color: getIconColor('settings', activePage === 'settings'), display: 'flex' }}>

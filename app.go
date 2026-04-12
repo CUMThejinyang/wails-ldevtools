@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"devtools/internal/cleaner"
+	"devtools/internal/syncer"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 // AppConfig 整个应用的配置
 type AppConfig struct {
 	Cleaner cleaner.Settings `json:"cleaner"`
+	Sync    syncer.Config    `json:"sync"`
 	Theme   string           `json:"theme"`
 }
 
@@ -23,6 +25,7 @@ type App struct {
 	config     AppConfig
 	configPath string
 	cleanerSvc *cleaner.Service
+	syncerSvc  *syncer.Service
 	mu         sync.Mutex
 }
 
@@ -39,34 +42,41 @@ func (a *App) startup(ctx context.Context) {
 	a.configPath = filepath.Join(configDir, "config.json")
 	a.loadConfig()
 	a.cleanerSvc = cleaner.NewService(ctx)
+	a.syncerSvc = syncer.NewService(ctx)
 }
 
 func (a *App) shutdown(ctx context.Context) {
 	if a.cleanerSvc != nil {
 		a.cleanerSvc.Stop()
 	}
+	if a.syncerSvc != nil {
+		a.syncerSvc.Stop()
+	}
 }
 
 func (a *App) loadConfig() {
 	data, err := os.ReadFile(a.configPath)
 	if err != nil {
-		a.config = AppConfig{
-			Theme: "dark",
-			Cleaner: cleaner.Settings{
-				Folders:     []cleaner.FolderConfig{},
-				ThreadCount: 4,
-			},
-		}
+		a.config = defaultConfig()
 		return
 	}
 	if err := json.Unmarshal(data, &a.config); err != nil {
-		a.config = AppConfig{
-			Theme: "dark",
-			Cleaner: cleaner.Settings{
-				Folders:     []cleaner.FolderConfig{},
-				ThreadCount: 4,
-			},
-		}
+		a.config = defaultConfig()
+	}
+}
+
+func defaultConfig() AppConfig {
+	return AppConfig{
+		Theme: "dark",
+		Cleaner: cleaner.Settings{
+			Folders:     []cleaner.FolderConfig{},
+			ThreadCount: 4,
+		},
+		Sync: syncer.Config{
+			Conflict:  syncer.ConflictOverwrite,
+			Recursive: true,
+			Patterns:  []string{},
+		},
 	}
 }
 
@@ -159,4 +169,47 @@ func (a *App) IsCleanRunning() bool {
 
 func (a *App) GetDirSize(path string) (int64, error) {
 	return cleaner.GetDirSize(path)
+}
+
+// ── Syncer ──
+
+func (a *App) GetSyncConfig() syncer.Config {
+	return a.config.Sync
+}
+
+func (a *App) SaveSyncConfig(config syncer.Config) error {
+	a.config.Sync = config
+	return a.saveConfig()
+}
+
+func (a *App) PreviewSync(config syncer.Config) ([]syncer.PreviewItem, error) {
+	return syncer.Preview(config)
+}
+
+func (a *App) StartSync(config syncer.Config) error {
+	a.config.Sync = config
+	_ = a.saveConfig()
+
+	onProgress := func(p syncer.Progress) {
+		runtime.EventsEmit(a.ctx, "sync:progress", p)
+	}
+	onCompleted := func(r syncer.OverallResult) {
+		runtime.EventsEmit(a.ctx, "sync:completed", r)
+	}
+	onConflict := func(req syncer.ConflictRequest) {
+		runtime.EventsEmit(a.ctx, "sync:conflict", req)
+	}
+	return a.syncerSvc.Start(config, onProgress, onCompleted, onConflict)
+}
+
+func (a *App) StopSync() {
+	a.syncerSvc.Stop()
+}
+
+func (a *App) IsSyncRunning() bool {
+	return a.syncerSvc.IsRunning()
+}
+
+func (a *App) ResolveSyncConflict(decision string) {
+	a.syncerSvc.ResolveConflict(decision)
 }

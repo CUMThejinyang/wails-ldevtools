@@ -1,4 +1,4 @@
-import type { CleanerSettings, OverallResult, PreviewItem } from '../types'
+import type { CleanerSettings, OverallResult, PreviewItem, SyncConfig, SyncPreviewItem } from '../types'
 
 declare global {
   interface Window {
@@ -35,6 +35,15 @@ export const bridge = {
   windowClose: () => call<void>('WindowClose'),
   windowIsMaximised: () => call<boolean>('WindowIsMaximised'),
   windowSetAlwaysOnTop: (on: boolean) => call<void>('WindowSetAlwaysOnTop', on),
+
+  // Sync
+  getSyncConfig:          ()                      => call<SyncConfig>('GetSyncConfig'),
+  saveSyncConfig:         (c: SyncConfig)         => call<void>('SaveSyncConfig', c),
+  previewSync:            (c: SyncConfig)         => call<SyncPreviewItem[]>('PreviewSync', c),
+  startSync:              (c: SyncConfig)         => call<void>('StartSync', c),
+  stopSync:               ()                      => call<void>('StopSync'),
+  isSyncRunning:          ()                      => call<boolean>('IsSyncRunning'),
+  resolveSyncConflict:    (decision: string)      => call<void>('ResolveSyncConflict', decision),
 
   // Cleaner
   getCleanerSettings: () => call<CleanerSettings>('GetCleanerSettings'),
