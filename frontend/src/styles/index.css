@@ -1,0 +1,214 @@
+@import "tailwindcss";
+
+/* ================================================
+   DevTools - Cherry Studio 风格设计系统
+   ================================================ */
+
+/* ── 字体 ── */
+:root {
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Microsoft YaHei", "PingFang SC", system-ui, Roboto, sans-serif;
+  --code-font-family: "Fira Code", "Cascadia Code", "JetBrains Mono",
+    Menlo, Consolas, monospace;
+}
+
+/* ── 布局尺寸 ── */
+:root {
+  --navbar-height: 44px;
+  --sidebar-width: 52px;
+  --panel-width: 260px;
+  --scrollbar-width: 6px;
+  --scrollbar-thumb-radius: 10px;
+}
+
+/* ── 暗色主题（默认）── */
+:root {
+  /* 背景层次 */
+  --color-background:         #181818;
+  --color-background-soft:    #222222;
+  --color-background-mute:    #2a2a2a;
+  --color-background-opacity: rgba(34, 34, 34, 0.85);
+  --inner-glow-opacity:       0.25;
+
+  /* 文字 */
+  --color-text:           rgba(255, 255, 245, 0.9);
+  --color-text-1:         rgba(255, 255, 245, 0.9);
+  --color-text-2:         rgba(235, 235, 245, 0.6);
+  --color-text-3:         rgba(235, 235, 245, 0.35);
+
+  /* 主色 */
+  --color-primary:      #00b96b;
+  --color-primary-soft: rgba(0, 185, 107, 0.6);
+  --color-primary-mute: rgba(0, 185, 107, 0.15);
+
+  /* 图标 */
+  --color-icon:       rgba(255, 255, 255, 0.55);
+  --color-icon-white: #ffffff;
+
+  /* 边框 */
+  --color-border:      rgba(255, 255, 255, 0.1);
+  --color-border-soft: rgba(255, 255, 255, 0.06);
+
+  /* 功能色 */
+  --color-error:   #ff4d50;
+  --color-warning: #faad14;
+  --color-success: #00b96b;
+
+  /* 交互 */
+  --color-hover:  rgba(255, 255, 255, 0.06);
+  --color-active: rgba(255, 255, 255, 0.1);
+
+  /* 列表项 */
+  --color-list-item:       rgba(255, 255, 255, 0.06);
+  --color-list-item-hover: rgba(255, 255, 255, 0.04);
+  --list-item-radius:      10px;
+
+  /* 导航栏 */
+  --navbar-bg: #1a1a1a;
+
+  /* 滚动条 */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.25);
+
+  /* 代码 */
+  --color-code-bg:          #2d2d2d;
+  --color-inline-code-bg:   rgba(255,255,255,0.08);
+  --color-inline-code-text: #e06c75;
+
+  /* 气泡弹出层（Tooltip / Popover） */
+  --color-popover:           #2a2a2a;
+  --color-popover-foreground: rgba(255, 255, 245, 0.9);
+}
+
+/* ── 亮色主题 ── */
+[theme-mode='light'] {
+  --color-background:         #f5f5f5;
+  --color-background-soft:    #ffffff;
+  --color-background-mute:    #ebebeb;
+  --color-background-opacity: rgba(245, 245, 245, 0.9);
+  --inner-glow-opacity:       0.08;
+
+  --color-text:   rgba(0, 0, 0, 0.88);
+  --color-text-1: rgba(0, 0, 0, 0.88);
+  --color-text-2: rgba(0, 0, 0, 0.55);
+  --color-text-3: rgba(0, 0, 0, 0.32);
+
+  --color-primary:      #00b96b;
+  --color-primary-soft: rgba(0, 185, 107, 0.5);
+  --color-primary-mute: rgba(0, 185, 107, 0.12);
+
+  --color-icon:       rgba(0, 0, 0, 0.5);
+  --color-icon-white: #000000;
+
+  --color-border:      rgba(0, 0, 0, 0.1);
+  --color-border-soft: rgba(0, 0, 0, 0.06);
+
+  --color-hover:  rgba(0, 0, 0, 0.04);
+  --color-active: rgba(0, 0, 0, 0.08);
+
+  --color-list-item:       #ffffff;
+  --color-list-item-hover: #f8f8f8;
+
+  --navbar-bg: rgba(242, 242, 242, 0.95);
+
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+
+  --color-code-bg:          #e8e8e8;
+  --color-inline-code-bg:   rgba(0, 0, 0, 0.06);
+  --color-inline-code-text: #d32f2f;
+
+  /* 气泡弹出层（Tooltip / Popover） */
+  --color-popover:           #ffffff;
+  --color-popover-foreground: rgba(0, 0, 0, 0.88);
+}
+
+/* ── Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+*:focus { outline: none; }
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+
+#root {
+  display: flex;
+  flex-direction: row;
+}
+
+ul { list-style: none; }
+
+input, textarea, .selectable {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* ── 滚动条 ── */
+::-webkit-scrollbar { width: var(--scrollbar-width); height: var(--scrollbar-width); }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  border-radius: var(--scrollbar-thumb-radius);
+  background: var(--scrollbar-thumb);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+
+/* ── 动画 ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes progressBar {
+  from { width: 0%; }
+}
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: translate(-50%, 2px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.anim-spin     { animation: spin 0.8s linear infinite; }
+.anim-pulse    { animation: pulse 1.5s ease-in-out infinite; }
+.anim-fade-in  { animation: fadeIn 0.2s ease both; }
+
+/* ── 工具类 ── */
+.text-nowrap {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.text-primary { color: var(--color-primary); }
+.text-error   { color: var(--color-error); }
+.text-muted   { color: var(--color-text-3); }
