@@ -1,5 +1,5 @@
 {
-  "name": "devtools-frontend",
+  "name": "devtools-frontend-antd",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -9,10 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@radix-ui/react-tooltip": "^1.2.8",
+    "@ant-design/icons": "^5.5.1",
     "@tailwindcss/vite": "^4.2.2",
+    "antd": "^5.21.0",
     "clsx": "^2.1.1",
-    "lucide-react": "0.263.1",
+    "dayjs": "^1.11.13",
     "react": "18.3.1",
     "react-activation": "^0.13.4",
     "react-dom": "18.3.1",

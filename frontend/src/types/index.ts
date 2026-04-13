@@ -5,7 +5,7 @@ export interface FolderConfig {
   patterns: string[]
   recursive: boolean
   deleteEmptyDirs: boolean
-  deleteFolder: boolean   // 清理完成后删除文件夹本身
+  deleteFolder: boolean
   enabled: boolean
 }
 
@@ -51,7 +51,6 @@ export interface PreviewItem {
   isDir: boolean
 }
 
-// 可扩展：在此添加新页面 ID
 export type PageId = 'cleaner' | 'sync' | 'settings'
 
 // ── Sync ──
@@ -62,18 +61,20 @@ export interface SyncConfig {
   dst: string
   conflict: ConflictMode
   recursive: boolean
-  patterns: string[]   // 空 = 全部
+  patterns: string[]
   threadCount: number
 }
 
-export type SyncFileStatus = 'new' | 'modified' | 'identical' | 'pending' | 'syncing' | 'synced' | 'skipped' | 'error'
+export type SyncFileStatus =
+  | 'new' | 'modified' | 'identical'
+  | 'pending' | 'syncing' | 'synced' | 'skipped' | 'error'
 
 export interface SyncPreviewItem {
   relativePath: string
   srcPath: string
   dstPath: string
   size: number
-  status: SyncFileStatus   // preview 阶段: new | modified | identical
+  status: SyncFileStatus
   error?: string
 }
 
@@ -81,3 +82,5 @@ export interface NavItem {
   id: PageId
   label: string
 }
+
+export type ThemeMode = 'dark' | 'light'

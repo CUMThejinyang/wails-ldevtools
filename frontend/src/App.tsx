@@ -1,55 +1,67 @@
-import { useState, useEffect } from 'react'
-import { KeepAlive } from 'react-activation'
-import Sidebar from './components/Sidebar'
-import TitleBar from './components/TitleBar'
-import CleanerPage from './pages/Cleaner'
-import SyncPage from './pages/Sync'
-import SettingsPage from './pages/Settings'
-import { bridge } from './hooks/bridge'
-import type { PageId } from './types'
+import { useEffect, useState } from 'react'
+import { ConfigProvider } from 'antd'
+import TitleBar from '@/components/nav/TitleBar'
+import Sidebar from '@/components/nav/Sidebar'
+import CleanerPage from '@/features/cleaner'
+import SyncPage from '@/features/sync'
+import SettingsPage from '@/features/settings'
+import { KeepAlive } from '@/app/keepalive'
+import { applyThemeAttribute, buildAntdTheme } from '@/app/theme'
+import { bridge } from '@/services/bridge'
+import type { PageId, ThemeMode } from '@/types'
 
 export default function App() {
   const [activePage, setActivePage] = useState<PageId>('cleaner')
-  const [theme, setTheme] = useState<string>('dark')
+  const [theme, setTheme] = useState<ThemeMode>('dark')
 
   useEffect(() => {
     bridge.getTheme()
-      .then((t) => applyTheme(t))
-      .catch(() => applyTheme('dark'))
+      .then((t) => setThemeBoth(((t === 'light' ? 'light' : 'dark') as ThemeMode)))
+      .catch(() => setThemeBoth('dark'))
   }, [])
 
-  const applyTheme = (t: string) => {
+  const setThemeBoth = (t: ThemeMode) => {
     setTheme(t)
-    document.body.setAttribute('theme-mode', t)
+    applyThemeAttribute(t)
   }
 
-  const toggleTheme = async () => {
-    const next = theme === 'dark' ? 'light' : 'dark'
-    applyTheme(next)
-    try { await bridge.setTheme(next) } catch {}
+  const onToggleTheme = async () => {
+    const next: ThemeMode = theme === 'dark' ? 'light' : 'dark'
+    setThemeBoth(next)
+    try { await bridge.setTheme(next) } catch { /* ignore */ }
   }
 
   return (
-    <div style={styles.root}>
-      {/* 自定义标题栏（最顶层，横跨全宽） */}
-      <TitleBar />
-
-      {/* 主体：侧边栏 + 内容区 */}
-      <div style={styles.body}>
-        <Sidebar
-          activePage={activePage}
-          onNavigate={setActivePage}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-        />
-
-        <main style={styles.main}>
-          {activePage === 'cleaner'  && <KeepAlive id="cleaner"><CleanerPage /></KeepAlive>}
-          {activePage === 'sync'     && <KeepAlive id="sync"><SyncPage /></KeepAlive>}
-          {activePage === 'settings' && <KeepAlive id="settings"><SettingsPage theme={theme} onToggleTheme={toggleTheme} /></KeepAlive>}
-        </main>
+    <ConfigProvider theme={buildAntdTheme(theme)}>
+      <div style={styles.root}>
+        <TitleBar />
+        <div style={styles.body}>
+          <Sidebar
+            activePage={activePage}
+            onNavigate={setActivePage}
+            theme={theme}
+            onToggleTheme={onToggleTheme}
+          />
+          <main style={styles.main}>
+            {/*
+              用 position:absolute + inset:0 给每个页面容器一个确定高度，
+              这样即使 react-activation 的 KeepAlive 内部 wrapper 不继承高度，
+              整个 flex 链条从 main→pageContainer→KeepAlive→PageShell 也能正确传递高度，
+              解决"页面内容溢出无法滚动"和"侧边栏背景高度不足"两个问题。
+            */}
+            <div className="page-slot" style={activePage === 'cleaner' ? styles.pageSlot : styles.pageHidden}>
+              <KeepAlive id="cleaner"><CleanerPage /></KeepAlive>
+            </div>
+            <div className="page-slot" style={activePage === 'sync' ? styles.pageSlot : styles.pageHidden}>
+              <KeepAlive id="sync"><SyncPage /></KeepAlive>
+            </div>
+            <div className="page-slot" style={activePage === 'settings' ? styles.pageSlot : styles.pageHidden}>
+              <KeepAlive id="settings"><SettingsPage theme={theme} onToggleTheme={onToggleTheme} /></KeepAlive>
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </ConfigProvider>
   )
 }
 
@@ -62,19 +74,25 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: 'hidden',
     backgroundColor: 'var(--color-background)',
   },
-  body: {
-    display: 'flex',
-    flex: 1,
-    overflow: 'hidden',
-  },
+  body: { display: 'flex', flex: 1, overflow: 'hidden' },
   main: {
     display: 'flex',
-    flexDirection: 'column',
     flex: 1,
     overflow: 'hidden',
+    position: 'relative',
     borderTopLeftRadius: 10,
     borderLeft: '0.5px solid var(--color-border)',
     borderTop: '0.5px solid var(--color-border)',
     backgroundColor: 'var(--color-background)',
+  },
+  pageSlot: {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  pageHidden: {
+    display: 'none',
   },
 }

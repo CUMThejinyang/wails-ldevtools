@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"from PIL import Image; print\\('Pillow OK'\\)\")",
+      "Bash(py --version)",
+      "Bash(python3:*)",
+      "Bash(/d/Environment/Python/Python311/python.exe --version)",
+      "Bash(/d/Environment/Python/Python311/python.exe:*)",
+      "Bash(/d/Environment/Golang/go1.22.3/bin/go build:*)",
+      "Bash(npx tsc:*)",
+      "WebSearch",
+      "Bash(npm view:*)",
+      "Bash(pnpm add:*)",
+      "Bash(openspec new:*)"
+    ]
+  }
+}
