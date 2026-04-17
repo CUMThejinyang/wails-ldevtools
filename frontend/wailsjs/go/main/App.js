@@ -18,6 +18,14 @@ export function GetTheme() {
   return window['go']['main']['App']['GetTheme']();
 }
 
+export function HashFile(arg1, arg2) {
+  return window['go']['main']['App']['HashFile'](arg1, arg2);
+}
+
+export function HashText(arg1, arg2) {
+  return window['go']['main']['App']['HashText'](arg1, arg2);
+}
+
 export function IsCleanRunning() {
   return window['go']['main']['App']['IsCleanRunning']();
 }
@@ -48,6 +56,10 @@ export function SaveSyncConfig(arg1) {
 
 export function SelectDirectory() {
   return window['go']['main']['App']['SelectDirectory']();
+}
+
+export function SelectFile(arg1) {
+  return window['go']['main']['App']['SelectFile'](arg1);
 }
 
 export function SetTheme(arg1) {

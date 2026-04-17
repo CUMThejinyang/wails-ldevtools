@@ -197,3 +197,97 @@ input, textarea, .selectable {
   flex-direction: column;
   overflow: hidden;
 }
+
+/* ── Monaco Editor 全局修正 ── */
+/* 全局 user-select:none 会阻止编辑器文本选中，需单独覆盖 */
+.monaco-editor,
+.monaco-editor * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* ── Codec 页 Tabs 全高适配 ── */
+.codec-tabs.ant-tabs-left {
+  height: 100%;
+  overflow: hidden;
+}
+.codec-tabs .ant-tabs-nav {
+  width: 120px !important;
+}
+.codec-tabs .ant-tabs-tab {
+  padding: 8px 12px !important;
+}
+.codec-tabs .ant-tabs-content-holder {
+  overflow: hidden;
+  display: flex;
+}
+.codec-tabs .ant-tabs-content {
+  flex: 1;
+  overflow: hidden;
+}
+.codec-tabs .ant-tabs-tabpane {
+  height: 100%;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+/* ── Codec 工具栏 ── */
+.codec-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 6px 12px;
+  min-height: 38px;
+  flex-shrink: 0;
+  border-bottom: 0.5px solid var(--color-border);
+  background: var(--color-background-soft);
+}
+
+/* 统一所有小控件行高为 26px，避免 Segmented / RadioButton / Button 高度错位 */
+.codec-toolbar .ant-btn-sm {
+  height: 26px;
+  font-size: 12px;
+  padding-inline: 9px;
+}
+.codec-toolbar .ant-segmented-sm {
+  height: 26px;
+  line-height: 24px;
+}
+.codec-toolbar .ant-segmented-sm .ant-segmented-item {
+  min-height: 22px;
+  line-height: 22px;
+}
+.codec-toolbar .ant-radio-group-small .ant-radio-button-wrapper {
+  height: 26px;
+  line-height: 24px;
+  font-size: 12px;
+}
+.codec-toolbar .ant-select-sm .ant-select-selector {
+  height: 26px !important;
+  line-height: 24px !important;
+}
+.codec-toolbar .ant-select-sm .ant-select-selection-item {
+  line-height: 24px !important;
+}
+.codec-toolbar .ant-input-sm {
+  height: 26px;
+  font-size: 12px;
+}
+.codec-toolbar .ant-divider-vertical {
+  height: 14px;
+  margin: 0 3px;
+  border-inline-start-color: var(--color-border);
+}
+
+/* ── 正则匹配高亮装饰 ── */
+.regex-match-highlight {
+  background: rgba(0, 185, 107, 0.22);
+  border-radius: 2px;
+  outline: 1px solid rgba(0, 185, 107, 0.45);
+  outline-offset: -1px;
+}
+[theme-mode='light'] .regex-match-highlight {
+  background: rgba(0, 185, 107, 0.18);
+  outline: 1px solid rgba(0, 185, 107, 0.55);
+}

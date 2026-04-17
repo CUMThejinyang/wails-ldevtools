@@ -11,6 +11,10 @@ export function GetSyncConfig():Promise<syncer.Config>;
 
 export function GetTheme():Promise<string>;
 
+export function HashFile(arg1:string,arg2:string):Promise<string>;
+
+export function HashText(arg1:string,arg2:string):Promise<string>;
+
 export function IsCleanRunning():Promise<boolean>;
 
 export function IsSyncRunning():Promise<boolean>;
@@ -26,6 +30,8 @@ export function SaveCleanerSettings(arg1:cleaner.Settings):Promise<void>;
 export function SaveSyncConfig(arg1:syncer.Config):Promise<void>;
 
 export function SelectDirectory():Promise<string>;
+
+export function SelectFile(arg1:string):Promise<string>;
 
 export function SetTheme(arg1:string):Promise<void>;
 

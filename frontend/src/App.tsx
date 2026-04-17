@@ -4,6 +4,7 @@ import TitleBar from '@/components/nav/TitleBar'
 import Sidebar from '@/components/nav/Sidebar'
 import CleanerPage from '@/features/cleaner'
 import SyncPage from '@/features/sync'
+import CodecPage from '@/features/codec'
 import SettingsPage from '@/features/settings'
 import { KeepAlive } from '@/app/keepalive'
 import { applyThemeAttribute, buildAntdTheme } from '@/app/theme'
@@ -54,6 +55,9 @@ export default function App() {
             </div>
             <div className="page-slot" style={activePage === 'sync' ? styles.pageSlot : styles.pageHidden}>
               <KeepAlive id="sync"><SyncPage /></KeepAlive>
+            </div>
+            <div className="page-slot" style={activePage === 'codec' ? styles.pageSlot : styles.pageHidden}>
+              <KeepAlive id="codec"><CodecPage /></KeepAlive>
             </div>
             <div className="page-slot" style={activePage === 'settings' ? styles.pageSlot : styles.pageHidden}>
               <KeepAlive id="settings"><SettingsPage theme={theme} onToggleTheme={onToggleTheme} /></KeepAlive>

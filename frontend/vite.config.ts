@@ -13,6 +13,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    chunkSizeWarningLimit: 6000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'monaco-core': ['monaco-editor/esm/vs/editor/editor.api'],
+          'monaco-json': ['monaco-editor/esm/vs/language/json/json.worker'],
+        },
+      },
+    },
   },
   server: {
     strictPort: true,

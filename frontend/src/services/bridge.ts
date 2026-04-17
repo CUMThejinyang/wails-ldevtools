@@ -50,6 +50,11 @@ export const bridge = {
   isSyncRunning:       () => call<boolean>('IsSyncRunning'),
   resolveSyncConflict: (decision: string) => call<void>('ResolveSyncConflict', decision),
 
+  // Codec
+  hashText: (text: string, algo: string) => call<string>('HashText', text, algo),
+  hashFile: (path: string, algo: string) => call<string>('HashFile', path, algo),
+  selectFile: (title: string) => call<string>('SelectFile', title),
+
   // Cleaner
   getCleanerSettings:  () => call<CleanerSettings>('GetCleanerSettings'),
   saveCleanerSettings: (s: CleanerSettings) => call<void>('SaveCleanerSettings', s),

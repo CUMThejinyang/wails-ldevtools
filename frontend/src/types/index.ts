@@ -51,7 +51,7 @@ export interface PreviewItem {
   isDir: boolean
 }
 
-export type PageId = 'cleaner' | 'sync' | 'settings'
+export type PageId = 'cleaner' | 'sync' | 'codec' | 'settings'
 
 // ── Sync ──
 export type ConflictMode = 'overwrite' | 'skip' | 'ask'
