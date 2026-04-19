@@ -3,7 +3,9 @@
 import {envreg} from '../models';
 import {cleaner} from '../models';
 import {httpserver} from '../models';
+import {main} from '../models';
 import {syncer} from '../models';
+import {procutil} from '../models';
 
 export function BroadcastEnvChange():Promise<envreg.OperationResult>;
 
@@ -22,6 +24,8 @@ export function GetEnv(arg1:string,arg2:string):Promise<envreg.EnvEntry>;
 export function GetHighRiskVariables():Promise<Array<string>>;
 
 export function GetLocalServerConfig():Promise<httpserver.Config>;
+
+export function GetPortViewerPrefs():Promise<main.PortViewerPrefs>;
 
 export function GetServerLogs(arg1:number):Promise<Array<httpserver.LogEntry>>;
 
@@ -43,7 +47,13 @@ export function IsCleanRunning():Promise<boolean>;
 
 export function IsElevated():Promise<boolean>;
 
+export function IsPortElevated():Promise<boolean>;
+
 export function IsSyncRunning():Promise<boolean>;
+
+export function KillPortProcess(arg1:number):Promise<void>;
+
+export function KillPortProcesses(arg1:Array<number>):Promise<void>;
 
 export function ListBackups():Promise<Array<envreg.BackupMeta>>;
 
@@ -51,9 +61,13 @@ export function ListEnv(arg1:string):Promise<Array<envreg.EnvEntry>>;
 
 export function ListLanAddresses():Promise<Array<string>>;
 
+export function ListPorts():Promise<Array<procutil.PortEntryWithProc>>;
+
 export function ListServerFiles(arg1:string):Promise<Array<httpserver.FileItem>>;
 
 export function LoadBackup(arg1:string):Promise<envreg.BackupSnapshot>;
+
+export function OpenInBrowser(arg1:string):Promise<void>;
 
 export function ParseAllPathSegments():Promise<Array<envreg.PathSegment>>;
 
@@ -74,6 +88,8 @@ export function SaveEnvBatch(arg1:Array<envreg.EnvChange>):Promise<envreg.BatchS
 export function SaveLocalServerConfig(arg1:httpserver.Config):Promise<void>;
 
 export function SavePath(arg1:Array<envreg.PathSegment>):Promise<envreg.BatchSaveResult>;
+
+export function SavePortViewerPrefs(arg1:main.PortViewerPrefs):Promise<void>;
 
 export function SaveSyncConfig(arg1:syncer.Config):Promise<void>;
 

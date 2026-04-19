@@ -123,7 +123,7 @@ export interface ImportPreview {
   errors: ImportError[]
 }
 
-export type PageId = 'cleaner' | 'sync' | 'codec' | 'env' | 'localserver' | 'settings'
+export type PageId = 'cleaner' | 'sync' | 'codec' | 'env' | 'localserver' | 'ports' | 'settings'
 
 // ── Sync ──
 export type ConflictMode = 'overwrite' | 'skip' | 'ask'
@@ -200,4 +200,26 @@ export interface FileItem {
   size: number
   isDir: boolean
   modTime: string
+}
+
+// ── Port Viewer ──
+
+export interface PortEntry {
+  protocol: string
+  family: string
+  localAddr: string
+  localPort: number
+  remoteAddr: string
+  remotePort: number
+  state: string
+  pid: number
+  processName: string
+  exePath: string
+}
+
+export interface PortViewerPrefs {
+  pollInterval: number
+  protocol: string
+  family: string
+  states: string[]
 }

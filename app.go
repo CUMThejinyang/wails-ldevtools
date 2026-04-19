@@ -6,6 +6,8 @@ import (
 	"devtools/internal/codec"
 	"devtools/internal/envreg"
 	"devtools/internal/httpserver"
+	"devtools/internal/netstat"
+	"devtools/internal/procutil"
 	"devtools/internal/syncer"
 	"encoding/json"
 	"os"
@@ -16,12 +18,20 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
+type PortViewerPrefs struct {
+	PollInterval int      `json:"pollInterval"`
+	Protocol     string   `json:"protocol"`
+	Family       string   `json:"family"`
+	States       []string `json:"states"`
+}
+
 // AppConfig 整个应用的配置
 type AppConfig struct {
 	Cleaner     cleaner.Settings  `json:"cleaner"`
 	Sync        syncer.Config     `json:"sync"`
 	Theme       string            `json:"theme"`
 	LocalServer httpserver.Config `json:"localServer"`
+	PortViewer  PortViewerPrefs   `json:"portViewer"`
 }
 
 // App 应用结构体
@@ -90,6 +100,12 @@ func defaultConfig() AppConfig {
 		LocalServer: httpserver.Config{
 			Port:      5800,
 			IndexName: "index.html",
+		},
+		PortViewer: PortViewerPrefs{
+			PollInterval: 0,
+			Protocol:     "all",
+			Family:       "all",
+			States:       []string{},
 		},
 	}
 }
@@ -392,4 +408,39 @@ func (a *App) ListServerFiles(subPath string) []httpserver.FileItem {
 		return []httpserver.FileItem{}
 	}
 	return items
+}
+
+// ── Port Viewer ──
+
+func (a *App) ListPorts() ([]procutil.PortEntryWithProc, error) {
+	entries, err := netstat.ListPorts()
+	if err != nil {
+		return nil, err
+	}
+	return procutil.EnrichPorts(entries), nil
+}
+
+func (a *App) KillPortProcess(pid uint32) error {
+	return procutil.KillProcess(pid)
+}
+
+func (a *App) KillPortProcesses(pids []uint32) error {
+	return procutil.KillProcesses(pids)
+}
+
+func (a *App) IsPortElevated() bool {
+	return procutil.IsElevated()
+}
+
+func (a *App) OpenInBrowser(url string) error {
+	return procutil.OpenInBrowser(url)
+}
+
+func (a *App) GetPortViewerPrefs() PortViewerPrefs {
+	return a.config.PortViewer
+}
+
+func (a *App) SavePortViewerPrefs(prefs PortViewerPrefs) error {
+	a.config.PortViewer = prefs
+	return a.saveConfig()
 }

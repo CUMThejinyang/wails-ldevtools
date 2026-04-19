@@ -13,6 +13,8 @@ import type {
   OperationResult,
   PathSegment,
   PathValidation,
+  PortEntry,
+  PortViewerPrefs,
   PreviewItem,
   ServerStatus,
   SyncConfig,
@@ -109,6 +111,15 @@ export const bridge = {
   getLocalServerConfig: () => call<LocalServerConfig>('GetLocalServerConfig'),
   saveLocalServerConfig: (cfg: LocalServerConfig) => call<void>('SaveLocalServerConfig', cfg),
   listServerFiles: (subPath: string) => call<FileItem[]>('ListServerFiles', subPath),
+
+  // Port Viewer
+  listPorts: () => call<PortEntry[]>('ListPorts'),
+  killPortProcess: (pid: number) => call<string>('KillPortProcess', pid),
+  killPortProcesses: (pids: number[]) => call<string>('KillPortProcesses', pids),
+  isPortElevated: () => call<boolean>('IsPortElevated'),
+  openInBrowser: (url: string) => call<void>('OpenInBrowser', url),
+  getPortViewerPrefs: () => call<PortViewerPrefs>('GetPortViewerPrefs'),
+  savePortViewerPrefs: (prefs: PortViewerPrefs) => call<void>('SavePortViewerPrefs', prefs),
 }
 
 export function formatBytes(bytes: number): string {

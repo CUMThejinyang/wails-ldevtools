@@ -38,6 +38,10 @@ export function GetLocalServerConfig() {
   return window['go']['main']['App']['GetLocalServerConfig']();
 }
 
+export function GetPortViewerPrefs() {
+  return window['go']['main']['App']['GetPortViewerPrefs']();
+}
+
 export function GetServerLogs(arg1) {
   return window['go']['main']['App']['GetServerLogs'](arg1);
 }
@@ -78,8 +82,20 @@ export function IsElevated() {
   return window['go']['main']['App']['IsElevated']();
 }
 
+export function IsPortElevated() {
+  return window['go']['main']['App']['IsPortElevated']();
+}
+
 export function IsSyncRunning() {
   return window['go']['main']['App']['IsSyncRunning']();
+}
+
+export function KillPortProcess(arg1) {
+  return window['go']['main']['App']['KillPortProcess'](arg1);
+}
+
+export function KillPortProcesses(arg1) {
+  return window['go']['main']['App']['KillPortProcesses'](arg1);
 }
 
 export function ListBackups() {
@@ -94,12 +110,20 @@ export function ListLanAddresses() {
   return window['go']['main']['App']['ListLanAddresses']();
 }
 
+export function ListPorts() {
+  return window['go']['main']['App']['ListPorts']();
+}
+
 export function ListServerFiles(arg1) {
   return window['go']['main']['App']['ListServerFiles'](arg1);
 }
 
 export function LoadBackup(arg1) {
   return window['go']['main']['App']['LoadBackup'](arg1);
+}
+
+export function OpenInBrowser(arg1) {
+  return window['go']['main']['App']['OpenInBrowser'](arg1);
 }
 
 export function ParseAllPathSegments() {
@@ -140,6 +164,10 @@ export function SaveLocalServerConfig(arg1) {
 
 export function SavePath(arg1) {
   return window['go']['main']['App']['SavePath'](arg1);
+}
+
+export function SavePortViewerPrefs(arg1) {
+  return window['go']['main']['App']['SavePortViewerPrefs'](arg1);
 }
 
 export function SaveSyncConfig(arg1) {

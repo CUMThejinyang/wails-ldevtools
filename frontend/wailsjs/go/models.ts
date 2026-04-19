@@ -459,6 +459,64 @@ export namespace httpserver {
 
 }
 
+export namespace main {
+	
+	export class PortViewerPrefs {
+	    pollInterval: number;
+	    protocol: string;
+	    family: string;
+	    states: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new PortViewerPrefs(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.pollInterval = source["pollInterval"];
+	        this.protocol = source["protocol"];
+	        this.family = source["family"];
+	        this.states = source["states"];
+	    }
+	}
+
+}
+
+export namespace procutil {
+	
+	export class PortEntryWithProc {
+	    protocol: string;
+	    family: string;
+	    localAddr: string;
+	    localPort: number;
+	    remoteAddr: string;
+	    remotePort: number;
+	    state: string;
+	    pid: number;
+	    processName: string;
+	    exePath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PortEntryWithProc(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.protocol = source["protocol"];
+	        this.family = source["family"];
+	        this.localAddr = source["localAddr"];
+	        this.localPort = source["localPort"];
+	        this.remoteAddr = source["remoteAddr"];
+	        this.remotePort = source["remotePort"];
+	        this.state = source["state"];
+	        this.pid = source["pid"];
+	        this.processName = source["processName"];
+	        this.exePath = source["exePath"];
+	    }
+	}
+
+}
+
 export namespace syncer {
 	
 	export class Config {
