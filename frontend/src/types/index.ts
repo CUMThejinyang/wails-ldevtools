@@ -123,7 +123,7 @@ export interface ImportPreview {
   errors: ImportError[]
 }
 
-export type PageId = 'cleaner' | 'sync' | 'codec' | 'env' | 'settings'
+export type PageId = 'cleaner' | 'sync' | 'codec' | 'env' | 'localserver' | 'settings'
 
 // ── Sync ──
 export type ConflictMode = 'overwrite' | 'skip' | 'ask'
@@ -156,3 +156,48 @@ export interface NavItem {
 }
 
 export type ThemeMode = 'dark' | 'light'
+
+// ── Local Server ──
+
+export interface LocalServerConfig {
+  root: string
+  port: number
+  bindLocal: boolean
+  spaMode: boolean
+  singleFile: boolean
+  indexName: string
+  authEnabled: boolean
+  authUser: string
+  authPass: string
+}
+
+export interface ServerStatus {
+  running: boolean
+  root: string
+  port: number
+  bindLocal: boolean
+  mode: string
+  authEnabled: boolean
+  startedAt: string
+  stats: { totalRequests: number; totalBytes: number }
+  urls: string[]
+}
+
+export interface LogEntry {
+  time: string
+  remoteAddr: string
+  method: string
+  path: string
+  status: number
+  bytes: number
+  durationMs: number
+  userAgent: string
+}
+
+export interface FileItem {
+  name: string
+  path: string
+  size: number
+  isDir: boolean
+  modTime: string
+}

@@ -6,11 +6,15 @@ import type {
   EnvChange,
   EnvEntry,
   EnvScope,
+  FileItem,
   ImportPreview,
+  LocalServerConfig,
+  LogEntry,
   OperationResult,
   PathSegment,
   PathValidation,
   PreviewItem,
+  ServerStatus,
   SyncConfig,
   SyncPreviewItem,
 } from '@/types'
@@ -95,6 +99,16 @@ export const bridge = {
   isElevated: () => call<boolean>('IsElevated'),
   broadcastEnvChange: () => call<OperationResult>('BroadcastEnvChange'),
   getHighRiskVariables: () => call<string[]>('GetHighRiskVariables'),
+
+  // Local Server
+  startServer: (cfg: LocalServerConfig) => call<void>('StartServer', cfg),
+  stopServer: () => call<void>('StopServer'),
+  getServerStatus: () => call<ServerStatus>('GetServerStatus'),
+  getServerLogs: (n: number) => call<LogEntry[]>('GetServerLogs', n),
+  listLanAddresses: () => call<string[]>('ListLanAddresses'),
+  getLocalServerConfig: () => call<LocalServerConfig>('GetLocalServerConfig'),
+  saveLocalServerConfig: (cfg: LocalServerConfig) => call<void>('SaveLocalServerConfig', cfg),
+  listServerFiles: (subPath: string) => call<FileItem[]>('ListServerFiles', subPath),
 }
 
 export function formatBytes(bytes: number): string {

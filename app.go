@@ -5,20 +5,23 @@ import (
 	"devtools/internal/cleaner"
 	"devtools/internal/codec"
 	"devtools/internal/envreg"
+	"devtools/internal/httpserver"
 	"devtools/internal/syncer"
 	"encoding/json"
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // AppConfig 整个应用的配置
 type AppConfig struct {
-	Cleaner cleaner.Settings `json:"cleaner"`
-	Sync    syncer.Config    `json:"sync"`
-	Theme   string           `json:"theme"`
+	Cleaner     cleaner.Settings  `json:"cleaner"`
+	Sync        syncer.Config     `json:"sync"`
+	Theme       string            `json:"theme"`
+	LocalServer httpserver.Config `json:"localServer"`
 }
 
 // App 应用结构体
@@ -28,6 +31,7 @@ type App struct {
 	configPath string
 	cleanerSvc *cleaner.Service
 	syncerSvc  *syncer.Service
+	httpServer *httpserver.Service
 	mu         sync.Mutex
 }
 
@@ -45,6 +49,7 @@ func (a *App) startup(ctx context.Context) {
 	a.loadConfig()
 	a.cleanerSvc = cleaner.NewService(ctx)
 	a.syncerSvc = syncer.NewService(ctx)
+	a.httpServer = httpserver.NewService(ctx)
 }
 
 func (a *App) shutdown(ctx context.Context) {
@@ -53,6 +58,9 @@ func (a *App) shutdown(ctx context.Context) {
 	}
 	if a.syncerSvc != nil {
 		a.syncerSvc.Stop()
+	}
+	if a.httpServer != nil {
+		a.httpServer.StopWithTimeout(3 * time.Second)
 	}
 }
 
@@ -78,6 +86,10 @@ func defaultConfig() AppConfig {
 			Conflict:  syncer.ConflictOverwrite,
 			Recursive: true,
 			Patterns:  []string{},
+		},
+		LocalServer: httpserver.Config{
+			Port:      5800,
+			IndexName: "index.html",
 		},
 	}
 }
@@ -322,4 +334,62 @@ func (a *App) BroadcastEnvChange() envreg.OperationResult {
 
 func (a *App) GetHighRiskVariables() []string {
 	return envreg.HighRiskVariables()
+}
+
+// ── Local Server ──
+
+func (a *App) StartServer(cfg httpserver.Config) error {
+	if cfg.Port == 0 {
+		cfg.Port = 5800
+	}
+	if cfg.IndexName == "" {
+		cfg.IndexName = "index.html"
+	}
+	return a.httpServer.Start(cfg)
+}
+
+func (a *App) StopServer() error {
+	return a.httpServer.Stop()
+}
+
+func (a *App) GetServerStatus() httpserver.ServerStatus {
+	return a.httpServer.Status()
+}
+
+func (a *App) GetServerLogs(n int) []httpserver.LogEntry {
+	return a.httpServer.GetLogs(n)
+}
+
+func (a *App) ListLanAddresses() []string {
+	return httpserver.ListLanAddresses()
+}
+
+func (a *App) GetLocalServerConfig() httpserver.Config {
+	cfg := a.config.LocalServer
+	if cfg.Port == 0 {
+		cfg.Port = 5800
+	}
+	if cfg.IndexName == "" {
+		cfg.IndexName = "index.html"
+	}
+	return cfg
+}
+
+func (a *App) SaveLocalServerConfig(cfg httpserver.Config) error {
+	if cfg.Port == 0 {
+		cfg.Port = 5800
+	}
+	if cfg.IndexName == "" {
+		cfg.IndexName = "index.html"
+	}
+	a.config.LocalServer = cfg
+	return a.saveConfig()
+}
+
+func (a *App) ListServerFiles(subPath string) []httpserver.FileItem {
+	items, err := a.httpServer.ListFiles(subPath)
+	if err != nil {
+		return []httpserver.FileItem{}
+	}
+	return items
 }

@@ -1,4 +1,4 @@
-import { DeleteOutlined, SettingOutlined, SunOutlined, MoonOutlined, CodeOutlined, FunctionOutlined } from '@ant-design/icons'
+import { DeleteOutlined, SettingOutlined, SunOutlined, MoonOutlined, CodeOutlined, FunctionOutlined, CloudServerOutlined } from '@ant-design/icons'
 import type { PageId, ThemeMode } from '@/types'
 import { SyncIcon } from '@/icons'
 import NavIconButton from './NavIconButton'
@@ -8,6 +8,7 @@ const NAV_ITEMS: { id: PageId; icon: React.ReactNode; label: string }[] = [
   { id: 'sync',    icon: <SyncIcon size={18} />,                        label: '文件夹同步' },
   { id: 'codec',   icon: <CodeOutlined style={{ fontSize: 18 }} />,     label: '编码工具箱' },
   { id: 'env',     icon: <FunctionOutlined style={{ fontSize: 18 }} />, label: '环境变量' },
+  { id: 'localserver', icon: <CloudServerOutlined style={{ fontSize: 18 }} />, label: '本地服务' },
 ]
 
 interface Props {

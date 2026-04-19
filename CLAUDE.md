@@ -25,12 +25,13 @@ This is a **Wails v2** desktop app (Go backend + React frontend, embedded via `e
 - `internal/cleaner/` — worker-pool concurrent deletion engine; emits `cleaner:progress` and `cleaner:completed` Wails events
 - `internal/syncer/` — file sync engine; emits `sync:progress`, `sync:completed`, `sync:conflict` Wails events
 - `internal/codec/` — hash computation (MD5/SHA1/SHA256/SHA512) for text and files
+- `internal/httpserver/` — HTTP file server with SPA/single-file mode, Basic Auth, ring buffer logging; emits `server:log`, `server:log_batch`, `server:status` Wails events
 
 **Frontend layer (`frontend/src/`):**
 - `services/bridge.ts` — single file wrapping all `window.go.main.App.*` calls; use this for any Go↔JS interop
 - `App.tsx` — root layout: TitleBar + Sidebar + page area with KeepAlive; pages are hidden via `display:none` (not unmounted)
 - `app/theme.ts` — `buildAntdTheme(mode)` maps CSS variables to Antd tokens
-- `features/` — business modules (cleaner, sync, codec, settings), each self-contained
+- `features/` — business modules (cleaner, sync, codec, localserver, settings), each self-contained
 - `components/` — shared UI: layout (PageShell, SectionCard), form (PathPicker, PatternInput, NumberStepper), feedback (ProgressPanel, EmptyState, StatusTag), nav (TitleBar, Sidebar), common (IconButton, ConfirmModal)
 - `hooks/useWailsEvent.ts` — `EventsOn` + cleanup wrapper
 - `styles/index.css` — CSS variable system; theme driven by `body[theme-mode='dark|light']`

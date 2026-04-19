@@ -34,6 +34,18 @@ export function GetHighRiskVariables() {
   return window['go']['main']['App']['GetHighRiskVariables']();
 }
 
+export function GetLocalServerConfig() {
+  return window['go']['main']['App']['GetLocalServerConfig']();
+}
+
+export function GetServerLogs(arg1) {
+  return window['go']['main']['App']['GetServerLogs'](arg1);
+}
+
+export function GetServerStatus() {
+  return window['go']['main']['App']['GetServerStatus']();
+}
+
 export function GetSyncConfig() {
   return window['go']['main']['App']['GetSyncConfig']();
 }
@@ -78,6 +90,14 @@ export function ListEnv(arg1) {
   return window['go']['main']['App']['ListEnv'](arg1);
 }
 
+export function ListLanAddresses() {
+  return window['go']['main']['App']['ListLanAddresses']();
+}
+
+export function ListServerFiles(arg1) {
+  return window['go']['main']['App']['ListServerFiles'](arg1);
+}
+
 export function LoadBackup(arg1) {
   return window['go']['main']['App']['LoadBackup'](arg1);
 }
@@ -112,6 +132,10 @@ export function SaveCleanerSettings(arg1) {
 
 export function SaveEnvBatch(arg1) {
   return window['go']['main']['App']['SaveEnvBatch'](arg1);
+}
+
+export function SaveLocalServerConfig(arg1) {
+  return window['go']['main']['App']['SaveLocalServerConfig'](arg1);
 }
 
 export function SavePath(arg1) {
@@ -150,12 +174,20 @@ export function StartClean(arg1) {
   return window['go']['main']['App']['StartClean'](arg1);
 }
 
+export function StartServer(arg1) {
+  return window['go']['main']['App']['StartServer'](arg1);
+}
+
 export function StartSync(arg1) {
   return window['go']['main']['App']['StartSync'](arg1);
 }
 
 export function StopClean() {
   return window['go']['main']['App']['StopClean']();
+}
+
+export function StopServer() {
+  return window['go']['main']['App']['StopServer']();
 }
 
 export function StopSync() {
