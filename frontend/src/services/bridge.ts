@@ -1,5 +1,15 @@
 import type {
+  BackupMeta,
+  BackupSnapshot,
+  BatchSaveResult,
   CleanerSettings,
+  EnvChange,
+  EnvEntry,
+  EnvScope,
+  ImportPreview,
+  OperationResult,
+  PathSegment,
+  PathValidation,
   PreviewItem,
   SyncConfig,
   SyncPreviewItem,
@@ -32,6 +42,8 @@ export const bridge = {
   getTheme: () => call<string>('GetTheme'),
   setTheme: (theme: string) => call<void>('SetTheme', theme),
   selectDirectory: () => call<string>('SelectDirectory'),
+  selectFile: (title: string) => call<string>('SelectFile', title),
+  selectSaveFile: (title: string) => call<string>('SelectSaveFile', title),
   getDirSize: (path: string) => call<number>('GetDirSize', path),
 
   // 窗口控制
@@ -53,7 +65,6 @@ export const bridge = {
   // Codec
   hashText: (text: string, algo: string) => call<string>('HashText', text, algo),
   hashFile: (path: string, algo: string) => call<string>('HashFile', path, algo),
-  selectFile: (title: string) => call<string>('SelectFile', title),
 
   // Cleaner
   getCleanerSettings:  () => call<CleanerSettings>('GetCleanerSettings'),
@@ -62,6 +73,28 @@ export const bridge = {
   startClean:          (s: CleanerSettings) => call<void>('StartClean', s),
   stopClean:           () => call<void>('StopClean'),
   isCleanRunning:      () => call<boolean>('IsCleanRunning'),
+
+  // Env
+  listEnv: (scope: EnvScope) => call<EnvEntry[]>('ListEnv', scope),
+  getEnv: (scope: EnvScope, name: string) => call<EnvEntry>('GetEnv', scope, name),
+  setEnv: (scope: EnvScope, name: string, value: string, type: string) => call<BatchSaveResult>('SetEnv', scope, name, value, type),
+  deleteEnv: (scope: EnvScope, name: string) => call<BatchSaveResult>('DeleteEnv', scope, name),
+  saveEnvBatch: (changes: EnvChange[]) => call<BatchSaveResult>('SaveEnvBatch', changes),
+  parsePath: (scope: EnvScope) => call<PathSegment[]>('ParsePath', scope),
+  parseAllPathSegments: () => call<PathSegment[]>('ParseAllPathSegments'),
+  savePath: (segments: PathSegment[]) => call<BatchSaveResult>('SavePath', segments),
+  validatePath: (paths: string[]) => call<PathValidation[]>('ValidatePath', paths),
+  snapshot: (note: string) => call<BackupMeta>('Snapshot', note),
+  listBackups: () => call<BackupMeta[]>('ListBackups'),
+  restoreBackup: (id: string) => call<BatchSaveResult>('RestoreBackup', id),
+  deleteBackup: (id: string) => call<OperationResult>('DeleteBackup', id),
+  loadBackup: (id: string) => call<BackupSnapshot>('LoadBackup', id),
+  exportEnvFile: (scope: EnvScope, outPath: string) => call<OperationResult>('ExportEnvFile', scope, outPath),
+  importEnvFilePreview: (path: string, scope: EnvScope) => call<ImportPreview>('ImportEnvFilePreview', path, scope),
+  importEnvFileCommit: (preview: ImportPreview) => call<BatchSaveResult>('ImportEnvFileCommit', preview),
+  isElevated: () => call<boolean>('IsElevated'),
+  broadcastEnvChange: () => call<OperationResult>('BroadcastEnvChange'),
+  getHighRiskVariables: () => call<string[]>('GetHighRiskVariables'),
 }
 
 export function formatBytes(bytes: number): string {

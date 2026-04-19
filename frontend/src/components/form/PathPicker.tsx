@@ -8,15 +8,30 @@ interface Props {
   placeholder?: string
   disabled?: boolean
   style?: React.CSSProperties
+  mode?: 'directory' | 'file' | 'save-file'
+  title?: string
 }
 
-export default function PathPicker({ value, onChange, placeholder = '请选择路径', disabled, style }: Props) {
+export default function PathPicker({
+  value,
+  onChange,
+  placeholder = '请选择路径',
+  disabled,
+  style,
+  mode = 'directory',
+  title,
+}: Props) {
   const pick = async () => {
     try {
-      const picked = await bridge.selectDirectory()
+      const picked = mode === 'file'
+        ? await bridge.selectFile(title || '选择文件')
+        : mode === 'save-file'
+          ? await bridge.selectSaveFile(title || '保存文件')
+          : await bridge.selectDirectory()
       if (picked) onChange(picked)
     } catch (err) {
-      message.error(`选择目录失败：${(err as Error).message}`)
+      const action = mode === 'file' ? '选择文件' : mode === 'save-file' ? '保存文件' : '选择目录'
+      message.error(`${action}失败：${(err as Error).message}`)
     }
   }
 

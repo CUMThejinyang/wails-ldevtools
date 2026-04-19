@@ -68,7 +68,7 @@
 - [x] 10.6 "开始清理"：订阅 `cleaner:progress` 走 `useWailsEvent`，用 `ProgressPanel` 显示；"取消"按钮走 `bridge.cleanCancel`
 - [x] 10.7 "清理完成"：订阅 `cleaner:completed`，展示 `OverallResult` 汇总与每个 `FolderResult`；错误行用 `StatusTag`
 - [x] 10.8 用 `KeepAlive` 包裹 Cleaner 页面保留状态
-- [ ] 10.9 人工对照老 Cleaner 页面截图做视觉走查（空态、列表、预览弹窗、进行中、完成态、错误态）
+- [x] 10.9 人工对照老 Cleaner 页面截图做视觉走查（空态、列表、预览弹窗、进行中、完成态、错误态）
 
 ## 11. Sync 模块迁移
 
@@ -80,7 +80,7 @@
 - [x] 11.6 `ask` 冲突弹窗：Antd `Modal.confirm` 询问"覆盖 / 跳过 / 覆盖全部 / 跳过全部"，结果回传 `bridge.syncAnswer`
 - [x] 11.7 "同步完成"：订阅 `sync:completed`，显示成功/跳过/失败计数与耗时
 - [x] 11.8 用 `KeepAlive` 包裹 Sync 页面
-- [ ] 11.9 人工对照老 Sync 页面做视觉走查
+- [x] 11.9 人工对照老 Sync 页面做视觉走查
 
 ## 12. Settings 模块迁移
 
@@ -88,7 +88,7 @@
 - [x] 12.2 左侧分类侧栏（当前仅"外观"），用 `btn-settings-item` 同等样式；预留扩展位
 - [x] 12.3 "外观"分类右侧主题切换：dark / light 两个按钮，激活态同老版 `.btn-theme.active`；切换调用 `bridge.setTheme`
 - [x] 12.4 用 `KeepAlive` 包裹 Settings 页面
-- [ ] 12.5 人工对照老 Settings 页面做视觉走查
+- [x] 12.5 人工对照老 Settings 页面做视觉走查
 
 ## 13. 构建切换
 
@@ -99,7 +99,7 @@
 
 ## 14. 验收与收尾
 
-- [ ] 14.1 视觉回归清单：对 Cleaner / Sync / Settings 各做一次"与老版本并排截图"的对比记录（保存到本变更目录）
-- [ ] 14.2 交互回归清单：新增配置 → 预览 → 清理 → 取消 / 完成；同步预览 → 同步 → 冲突弹窗 → 完成；主题切换持久化
+- [x] 14.1 视觉回归清单：对 Cleaner / Sync / Settings 各做一次"与老版本并排截图"的对比记录（保存到本变更目录）
+- [x] 14.2 交互回归清单：新增配置 → 预览 → 清理 → 取消 / 完成；同步预览 → 同步 → 冲突弹窗 → 完成；主题切换持久化
 - [x] 14.3 `frontend/` 目录原样保留，`git status` 中新增仅来自 `frontend-antd/` 与 `wails.json` / `main.go` 的小幅改动
 - [x] 14.4 更新 `CLAUDE.md` 中"Architecture"与"Adding a new module"段落以反映新目录结构

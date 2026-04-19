@@ -4,7 +4,7 @@ import (
 	"context"
 	"devtools/internal/cleaner"
 	"devtools/internal/codec"
-
+	"devtools/internal/envreg"
 	"devtools/internal/syncer"
 	"encoding/json"
 	"os"
@@ -124,13 +124,33 @@ func (a *App) SetTheme(theme string) error {
 }
 
 func (a *App) SelectDirectory() (string, error) {
-	dir, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
-		Title: "选择文件夹",
-	})
-	if err != nil {
-		return "", err
+	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{Title: "选择文件夹"})
+}
+
+func (a *App) SelectFile(title string) (string, error) {
+	if title == "" {
+		title = "选择文件"
 	}
-	return dir, nil
+	return runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{Title: title})
+}
+
+func (a *App) SelectSaveFile(title string) (string, error) {
+	if title == "" {
+		title = "保存文件"
+	}
+	return runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{Title: title})
+}
+
+func (a *App) GetDirSize(path string) (int64, error) {
+	return cleaner.GetDirSize(path)
+}
+
+func (a *App) HashText(text, algo string) (string, error) {
+	return codec.HashText(text, algo)
+}
+
+func (a *App) HashFile(path, algo string) (string, error) {
+	return codec.HashFile(path, algo)
 }
 
 // ── Cleaner ──
@@ -167,10 +187,6 @@ func (a *App) StopClean() {
 
 func (a *App) IsCleanRunning() bool {
 	return a.cleanerSvc.IsRunning()
-}
-
-func (a *App) GetDirSize(path string) (int64, error) {
-	return cleaner.GetDirSize(path)
 }
 
 // ── Syncer ──
@@ -214,4 +230,96 @@ func (a *App) IsSyncRunning() bool {
 
 func (a *App) ResolveSyncConflict(decision string) {
 	a.syncerSvc.ResolveConflict(decision)
+}
+
+// ── Env editor ──
+
+func (a *App) ListEnv(scope string) ([]envreg.EnvEntry, error) {
+	return envreg.ListEnv(scope)
+}
+
+func (a *App) GetEnv(scope, name string) (envreg.EnvEntry, error) {
+	return envreg.GetEnv(scope, name)
+}
+
+func (a *App) SetEnv(scope, name, value, valueType string) envreg.BatchSaveResult {
+	return envreg.SaveEnvBatch([]envreg.EnvChange{{
+		Name:  name,
+		Value: value,
+		Type:  valueType,
+		Scope: envreg.NormalizeScope(scope),
+	}})
+}
+
+func (a *App) DeleteEnv(scope, name string) envreg.BatchSaveResult {
+	return envreg.SaveEnvBatch([]envreg.EnvChange{{
+		Name:   name,
+		Scope:  envreg.NormalizeScope(scope),
+		Delete: true,
+	}})
+}
+
+func (a *App) SaveEnvBatch(changes []envreg.EnvChange) envreg.BatchSaveResult {
+	return envreg.SaveEnvBatch(changes)
+}
+
+func (a *App) ParsePath(scope string) ([]envreg.PathSegment, error) {
+	return envreg.ParsePath(scope)
+}
+
+func (a *App) ParseAllPathSegments() ([]envreg.PathSegment, error) {
+	return envreg.CurrentPathSegments()
+}
+
+func (a *App) SavePath(segments []envreg.PathSegment) envreg.BatchSaveResult {
+	return envreg.SavePathSegments(segments)
+}
+
+func (a *App) ValidatePath(paths []string) []envreg.PathValidation {
+	return envreg.ValidatePath(paths)
+}
+
+func (a *App) Snapshot(note string) (envreg.BackupMeta, error) {
+	return envreg.Snapshot(note)
+}
+
+func (a *App) ListBackups() ([]envreg.BackupMeta, error) {
+	return envreg.ListBackups()
+}
+
+func (a *App) RestoreBackup(id string) envreg.BatchSaveResult {
+	return envreg.RestoreBackup(id)
+}
+
+func (a *App) DeleteBackup(id string) envreg.OperationResult {
+	return envreg.ResultFromError(envreg.DeleteBackup(id))
+}
+
+func (a *App) LoadBackup(id string) (envreg.BackupSnapshot, error) {
+	return envreg.LoadBackup(id)
+}
+
+func (a *App) ExportEnvFile(scope, outPath string) envreg.OperationResult {
+	return envreg.ResultFromError(envreg.ExportEnvFile(scope, outPath))
+}
+
+func (a *App) ImportEnvFilePreview(path, scope string) (envreg.ImportPreview, error) {
+	return envreg.ImportEnvFile(path, scope)
+}
+
+func (a *App) ImportEnvFileCommit(preview envreg.ImportPreview) envreg.BatchSaveResult {
+	return envreg.ImportEnvFileCommit(preview)
+}
+
+func (a *App) IsElevated() bool {
+	return envreg.IsElevated()
+}
+
+func (a *App) BroadcastEnvChange() envreg.OperationResult {
+	_ = envreg.BroadcastEnvChange()
+	return envreg.OperationResult{Ok: true}
+}
+
+func (a *App) GetHighRiskVariables() []string {
+	return envreg.HighRiskVariables()
 }

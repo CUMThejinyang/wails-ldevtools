@@ -81,6 +81,245 @@ export namespace cleaner {
 
 }
 
+export namespace envreg {
+	
+	export class BackupMeta {
+	    id: string;
+	    timestamp: number;
+	    note?: string;
+	    userCount: number;
+	    systemCount: number;
+	    corrupt?: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new BackupMeta(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.timestamp = source["timestamp"];
+	        this.note = source["note"];
+	        this.userCount = source["userCount"];
+	        this.systemCount = source["systemCount"];
+	        this.corrupt = source["corrupt"];
+	    }
+	}
+	export class EnvEntry {
+	    name: string;
+	    value: string;
+	    type: string;
+	    scope: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new EnvEntry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.value = source["value"];
+	        this.type = source["type"];
+	        this.scope = source["scope"];
+	    }
+	}
+	export class BackupSnapshot {
+	    timestamp: number;
+	    note?: string;
+	    user: EnvEntry[];
+	    system: EnvEntry[];
+	
+	    static createFrom(source: any = {}) {
+	        return new BackupSnapshot(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.timestamp = source["timestamp"];
+	        this.note = source["note"];
+	        this.user = this.convertValues(source["user"], EnvEntry);
+	        this.system = this.convertValues(source["system"], EnvEntry);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class OperationResult {
+	    ok: boolean;
+	    cancelled?: boolean;
+	    error?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new OperationResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ok = source["ok"];
+	        this.cancelled = source["cancelled"];
+	        this.error = source["error"];
+	    }
+	}
+	export class BatchSaveResult {
+	    user: OperationResult;
+	    system: OperationResult;
+	
+	    static createFrom(source: any = {}) {
+	        return new BatchSaveResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.user = this.convertValues(source["user"], OperationResult);
+	        this.system = this.convertValues(source["system"], OperationResult);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class EnvChange {
+	    name: string;
+	    value: string;
+	    type: string;
+	    scope: string;
+	    delete: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new EnvChange(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.value = source["value"];
+	        this.type = source["type"];
+	        this.scope = source["scope"];
+	        this.delete = source["delete"];
+	    }
+	}
+	
+	export class ImportError {
+	    line: number;
+	    raw: string;
+	    reason: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ImportError(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.line = source["line"];
+	        this.raw = source["raw"];
+	        this.reason = source["reason"];
+	    }
+	}
+	export class ImportPreview {
+	    changes: EnvChange[];
+	    errors: ImportError[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ImportPreview(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.changes = this.convertValues(source["changes"], EnvChange);
+	        this.errors = this.convertValues(source["errors"], ImportError);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
+	export class PathSegment {
+	    raw: string;
+	    expanded: string;
+	    scope: string;
+	    exists: boolean;
+	    isDir: boolean;
+	    duplicateOf: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new PathSegment(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.raw = source["raw"];
+	        this.expanded = source["expanded"];
+	        this.scope = source["scope"];
+	        this.exists = source["exists"];
+	        this.isDir = source["isDir"];
+	        this.duplicateOf = source["duplicateOf"];
+	    }
+	}
+	export class PathValidation {
+	    path: string;
+	    expandedValue: string;
+	    exists: boolean;
+	    isDir: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new PathValidation(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.expandedValue = source["expandedValue"];
+	        this.exists = source["exists"];
+	        this.isDir = source["isDir"];
+	    }
+	}
+
+}
+
 export namespace syncer {
 	
 	export class Config {

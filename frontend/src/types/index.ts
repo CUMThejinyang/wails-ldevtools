@@ -51,7 +51,79 @@ export interface PreviewItem {
   isDir: boolean
 }
 
-export type PageId = 'cleaner' | 'sync' | 'codec' | 'settings'
+export type EnvScope = 'user' | 'system'
+export type EnvValueType = 'sz' | 'expand_sz'
+
+export interface EnvEntry {
+  name: string
+  value: string
+  type: EnvValueType
+  scope: EnvScope
+}
+
+export interface EnvChange {
+  name: string
+  value: string
+  type: EnvValueType
+  scope: EnvScope
+  delete?: boolean
+}
+
+export interface OperationResult {
+  ok: boolean
+  cancelled?: boolean
+  error?: string
+}
+
+export interface BatchSaveResult {
+  user: OperationResult
+  system: OperationResult
+}
+
+export interface PathSegment {
+  raw: string
+  expanded: string
+  scope: EnvScope
+  exists: boolean
+  isDir: boolean
+  duplicateOf: number
+}
+
+export interface PathValidation {
+  path: string
+  expandedValue: string
+  exists: boolean
+  isDir: boolean
+}
+
+export interface BackupMeta {
+  id: string
+  timestamp: number
+  note?: string
+  userCount: number
+  systemCount: number
+  corrupt?: boolean
+}
+
+export interface BackupSnapshot {
+  timestamp: number
+  note?: string
+  user: EnvEntry[]
+  system: EnvEntry[]
+}
+
+export interface ImportError {
+  line: number
+  raw: string
+  reason: string
+}
+
+export interface ImportPreview {
+  changes: EnvChange[]
+  errors: ImportError[]
+}
+
+export type PageId = 'cleaner' | 'sync' | 'codec' | 'env' | 'settings'
 
 // ── Sync ──
 export type ConflictMode = 'overwrite' | 'skip' | 'ask'
