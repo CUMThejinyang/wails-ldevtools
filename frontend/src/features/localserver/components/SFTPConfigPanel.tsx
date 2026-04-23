@@ -111,7 +111,7 @@ export default function SFTPConfigPanel({ onStatusChange }: Props) {
       <div style={styles.row}>
         <span style={styles.label}>端口</span>
         <InputNumber
-          value={config.port}
+          value={config.port || 22}
           onChange={(v) => updateConfig({ port: v ?? 22 })}
           min={1}
           max={65535}

@@ -302,6 +302,7 @@ export default function PortTable({
         onRow={(record) => ({
           onDoubleClick: () => handleRowDoubleClick(record),
         })}
+        tableLayout="fixed"
         scroll={{ x: scrollX, y: tableHeight - 39 }}
         pagination={false}
         virtual={filteredData.length > 500}
