@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CloudServerOutlined, EyeOutlined, FolderOpenOutlined, ProfileOutlined } from '@ant-design/icons'
-import { Button, Tag, message } from 'antd'
+import { Button, Tag, message, Tabs } from 'antd'
 import PageShell from '@/components/layout/PageShell'
 import SectionCard from '@/components/layout/SectionCard'
 import { bridge } from '@/services/bridge'
@@ -11,6 +11,8 @@ import AddressList from './components/AddressList'
 import LogTable from './components/LogTable'
 import StatusBadge from './components/StatusBadge'
 import FileExplorer from './components/FileExplorer'
+import FTPConfigPanel from './components/FTPConfigPanel'
+import SFTPConfigPanel from './components/SFTPConfigPanel'
 
 const defaultConfig: LocalServerConfig = {
   root: '',
@@ -110,100 +112,147 @@ export default function LocalServerPage() {
     return status.bindLocal ? status.urls[0] : status.urls.find((url) => !url.includes('127.0.0.1')) || status.urls[0]
   }, [status])
 
+  const activeTab = useMemo(() => {
+    const hash = window.location.hash
+    if (hash === '#ftp') return 'ftp'
+    if (hash === '#sftp') return 'sftp'
+    return 'http'
+  }, [])
+
+  const [tabKey, setTabKey] = useState(activeTab)
+
+  const handleTabChange = useCallback((key: string) => {
+    setTabKey(key)
+    window.location.hash = key
+  }, [])
+
+  const httpContent = (
+    <div style={styles.httpBody}>
+      <div style={styles.topRow}>
+        <SectionCard title="本地管理端" style={{ flex: 1 }}>
+          <ControlPanel
+            config={config}
+            onChange={updateConfig}
+            running={status.running}
+            error={error}
+            onStart={handleStart}
+            onStop={handleStop}
+            onSave={handleSaveConfig}
+          />
+        </SectionCard>
+        <SectionCard title="访问地址" style={{ width: 380 }}>
+          <AddressList status={status} />
+        </SectionCard>
+      </div>
+
+      <SectionCard title="局域网访问者页面" style={{ flexShrink: 0 }}>
+        <div style={styles.visitorCard}>
+          <div style={styles.visitorMain}>
+            <div style={styles.visitorTitleRow}>
+              <EyeOutlined style={{ color: 'var(--color-primary)' }} />
+              <span style={styles.visitorTitle}>面向访客的独立文件浏览页</span>
+              <Tag color={status.running ? 'success' : 'default'}>{status.running ? '已发布' : '未启动'}</Tag>
+            </div>
+            <div style={styles.visitorDesc}>
+              访客页只展示可访问文件、目录浏览与下载入口，不暴露请求日志、配置开关或管理操作。
+            </div>
+            <div style={styles.visitorMetaRow}>
+              <div style={styles.metaItem}>
+                <FolderOpenOutlined style={{ color: 'var(--color-text-3)' }} />
+                <span>{config.singleFile ? '单文件直链下载' : '目录浏览 + 多选打包下载'}</span>
+              </div>
+              <div style={styles.metaItem}>
+                <ProfileOutlined style={{ color: 'var(--color-text-3)' }} />
+                <span>{status.authEnabled ? '受基础认证保护' : '未启用认证'}</span>
+              </div>
+            </div>
+          </div>
+          <div style={styles.visitorActions}>
+            <div style={styles.visitorUrl} title={visitorUrl || '服务未启动'}>
+              {visitorUrl || '启动后显示访客访问地址'}
+            </div>
+            <Button
+              type="primary"
+              disabled={!visitorUrl}
+              onClick={() => window.open(visitorUrl, '_blank')}
+            >
+              打开访客页
+            </Button>
+          </div>
+        </div>
+      </SectionCard>
+
+      <div style={styles.bottomRow}>
+        <SectionCard
+          title="共享文件（本地管理端）"
+          extra={status.running ? <span style={styles.cardHint}>仅用于本机预览与检查</span> : undefined}
+          fill
+          style={{ minWidth: 0, flex: 1.1 }}
+          bodyStyle={{ flex: 1, minHeight: 0, padding: 8, overflow: 'auto' }}
+        >
+          <FileExplorer status={status} />
+        </SectionCard>
+        <SectionCard
+          title="请求日志（本地管理端）"
+          extra={logs.length > 0 ? <span style={{ color: 'var(--color-text-3)', fontSize: 12 }}>{logs.length} 条</span> : undefined}
+          fill
+          style={{ minWidth: 0, flex: 1 }}
+          bodyStyle={{ flex: 1, minHeight: 0, padding: 0, overflow: 'auto' }}
+        >
+          <LogTable logs={logs} onClear={handleClearLogs} />
+        </SectionCard>
+      </div>
+    </div>
+  )
+
+  const ftpContent = (
+    <div style={styles.tabBody}>
+      <SectionCard title="FTP 服务配置">
+        <FTPConfigPanel />
+      </SectionCard>
+    </div>
+  )
+
+  const sftpContent = (
+    <div style={styles.tabBody}>
+      <SectionCard title="SFTP 服务配置">
+        <SFTPConfigPanel />
+      </SectionCard>
+    </div>
+  )
+
   return (
     <PageShell
       title={<><CloudServerOutlined style={{ color: 'var(--color-primary)', marginRight: 8 }} />本地服务</>}
       actions={<StatusBadge running={status.running} error={error} />}
     >
-      <div style={styles.body}>
-        <div style={styles.topRow}>
-          <SectionCard title="本地管理端" style={{ flex: 1 }}>
-            <ControlPanel
-              config={config}
-              onChange={updateConfig}
-              running={status.running}
-              error={error}
-              onStart={handleStart}
-              onStop={handleStop}
-              onSave={handleSaveConfig}
-            />
-          </SectionCard>
-          <SectionCard title="访问地址" style={{ width: 380 }}>
-            <AddressList status={status} />
-          </SectionCard>
-        </div>
-
-        <SectionCard title="局域网访问者页面" style={{ flexShrink: 0 }}>
-          <div style={styles.visitorCard}>
-            <div style={styles.visitorMain}>
-              <div style={styles.visitorTitleRow}>
-                <EyeOutlined style={{ color: 'var(--color-primary)' }} />
-                <span style={styles.visitorTitle}>面向访客的独立文件浏览页</span>
-                <Tag color={status.running ? 'success' : 'default'}>{status.running ? '已发布' : '未启动'}</Tag>
-              </div>
-              <div style={styles.visitorDesc}>
-                访客页只展示可访问文件、目录浏览与下载入口，不暴露请求日志、配置开关或管理操作。
-              </div>
-              <div style={styles.visitorMetaRow}>
-                <div style={styles.metaItem}>
-                  <FolderOpenOutlined style={{ color: 'var(--color-text-3)' }} />
-                  <span>{config.singleFile ? '单文件直链下载' : '目录浏览 + 多选打包下载'}</span>
-                </div>
-                <div style={styles.metaItem}>
-                  <ProfileOutlined style={{ color: 'var(--color-text-3)' }} />
-                  <span>{status.authEnabled ? '受基础认证保护' : '未启用认证'}</span>
-                </div>
-              </div>
-            </div>
-            <div style={styles.visitorActions}>
-              <div style={styles.visitorUrl} title={visitorUrl || '服务未启动'}>
-                {visitorUrl || '启动后显示访客访问地址'}
-              </div>
-              <Button
-                type="primary"
-                disabled={!visitorUrl}
-                onClick={() => window.open(visitorUrl, '_blank')}
-              >
-                打开访客页
-              </Button>
-            </div>
-          </div>
-        </SectionCard>
-
-        <div style={styles.bottomRow}>
-          <SectionCard
-            title="共享文件（本地管理端）"
-            extra={status.running ? <span style={styles.cardHint}>仅用于本机预览与检查</span> : undefined}
-            fill
-            style={{ minWidth: 0, flex: 1.1 }}
-            bodyStyle={{ flex: 1, minHeight: 0, padding: 8, overflow: 'hidden' }}
-          >
-            <FileExplorer status={status} />
-          </SectionCard>
-          <SectionCard
-            title="请求日志（本地管理端）"
-            extra={logs.length > 0 ? <span style={{ color: 'var(--color-text-3)', fontSize: 12 }}>{logs.length} 条</span> : undefined}
-            fill
-            style={{ minWidth: 0, flex: 1 }}
-            bodyStyle={{ flex: 1, minHeight: 0, padding: 0, overflow: 'hidden' }}
-          >
-            <LogTable logs={logs} onClear={handleClearLogs} />
-          </SectionCard>
-        </div>
-      </div>
+      <Tabs
+        className="localserver-tabs"
+        activeKey={tabKey}
+        onChange={handleTabChange}
+        items={[
+          { key: 'http', label: 'HTTP 服务', children: httpContent },
+          { key: 'ftp', label: 'FTP 服务', children: ftpContent },
+          { key: 'sftp', label: 'SFTP 服务', children: sftpContent },
+        ]}
+      />
     </PageShell>
   )
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  body: {
+  httpBody: {
     display: 'flex',
     flexDirection: 'column',
-    flex: 1,
+    height: '100%',
     gap: 12,
     padding: 12,
     overflow: 'hidden',
-    minHeight: 0,
+  },
+  tabBody: {
+    padding: 12,
+    height: '100%',
+    overflow: 'auto',
   },
   topRow: {
     display: 'flex',

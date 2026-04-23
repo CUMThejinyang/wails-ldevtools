@@ -231,6 +231,29 @@ input, textarea, .selectable {
   overflow: hidden;
 }
 
+/* ── Local Server 页 Tabs 全高适配 ── */
+.localserver-tabs.ant-tabs {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.localserver-tabs .ant-tabs-content-holder {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+}
+.localserver-tabs .ant-tabs-content {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+.localserver-tabs .ant-tabs-tabpane {
+  height: 100%;
+  overflow: hidden;
+}
+
 /* ── Codec 工具栏 ── */
 .codec-toolbar {
   display: flex;

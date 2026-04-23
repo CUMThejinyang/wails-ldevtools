@@ -223,3 +223,57 @@ export interface PortViewerPrefs {
   family: string
   states: string[]
 }
+
+// ── FTP Server ──
+
+export interface FTPConfig {
+  root: string
+  port: number
+  bindLocal: boolean
+  authEnabled: boolean
+  authUser: string
+  authPass: string
+  allowAnonymous: boolean
+}
+
+export interface FTPStatus {
+  running: boolean
+  root: string
+  port: number
+  bindLocal: boolean
+  authEnabled: boolean
+  allowAnonymous: boolean
+  startedAt: string
+  activeConns: number
+  totalConns: number
+  urls: string[]
+}
+
+export interface FTPLogEntry {
+  time: string
+  remoteAddr: string
+  command: string
+  args: string
+  response: string
+  code: number
+}
+
+// ── SFTP Server ──
+
+export interface SFTPConfig {
+  root: string
+  port: number
+  bindLocal: boolean
+  authUser: string
+  authPass: string
+}
+
+export interface SFTPStatus {
+  running: boolean
+  root: string
+  port: number
+  bindLocal: boolean
+  startedAt: string
+  activeConns: number
+  urls: string[]
+}

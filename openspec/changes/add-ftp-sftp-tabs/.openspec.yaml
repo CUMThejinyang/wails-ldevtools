@@ -1,0 +1,14 @@
+name: add-ftp-sftp-tabs
+description: 在本地服务模块添加FTP和SFTP两个Tab页，支持一键启动文件传输服务
+created: 2026-04-22
+status: proposed
+
+artifacts:
+  - id: proposal
+    status: done
+  - id: design
+    status: done
+  - id: tasks
+    status: done
+
+applyRequires: []

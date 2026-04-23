@@ -7,6 +7,9 @@ import type {
   EnvEntry,
   EnvScope,
   FileItem,
+  FTPConfig,
+  FTPStatus,
+  FTPLogEntry,
   ImportPreview,
   LocalServerConfig,
   LogEntry,
@@ -17,6 +20,8 @@ import type {
   PortViewerPrefs,
   PreviewItem,
   ServerStatus,
+  SFTPConfig,
+  SFTPStatus,
   SyncConfig,
   SyncPreviewItem,
 } from '@/types'
@@ -111,6 +116,21 @@ export const bridge = {
   getLocalServerConfig: () => call<LocalServerConfig>('GetLocalServerConfig'),
   saveLocalServerConfig: (cfg: LocalServerConfig) => call<void>('SaveLocalServerConfig', cfg),
   listServerFiles: (subPath: string) => call<FileItem[]>('ListServerFiles', subPath),
+
+  // FTP Server
+  startFTP: (cfg: FTPConfig) => call<void>('StartFTP', cfg),
+  stopFTP: () => call<void>('StopFTP'),
+  getFTPStatus: () => call<FTPStatus>('GetFTPStatus'),
+  getFTPLogs: (n: number) => call<FTPLogEntry[]>('GetFTPLogs', n),
+  getFtpConfig: () => call<FTPConfig>('GetFtpConfig'),
+  saveFtpConfig: (cfg: FTPConfig) => call<void>('SaveFtpConfig', cfg),
+
+  // SFTP Server
+  startSFTP: (cfg: SFTPConfig) => call<void>('StartSFTP', cfg),
+  stopSFTP: () => call<void>('StopSFTP'),
+  getSFTPStatus: () => call<SFTPStatus>('GetSFTPStatus'),
+  getSftpConfig: () => call<SFTPConfig>('GetSftpConfig'),
+  saveSftpConfig: (cfg: SFTPConfig) => call<void>('SaveSftpConfig', cfg),
 
   // Port Viewer
   listPorts: () => call<PortEntry[]>('ListPorts'),

@@ -5,6 +5,7 @@ import (
 	"devtools/internal/cleaner"
 	"devtools/internal/codec"
 	"devtools/internal/envreg"
+	"devtools/internal/ftpserver"
 	"devtools/internal/httpserver"
 	"devtools/internal/netstat"
 	"devtools/internal/procutil"
@@ -27,11 +28,13 @@ type PortViewerPrefs struct {
 
 // AppConfig 整个应用的配置
 type AppConfig struct {
-	Cleaner     cleaner.Settings  `json:"cleaner"`
-	Sync        syncer.Config     `json:"sync"`
-	Theme       string            `json:"theme"`
-	LocalServer httpserver.Config `json:"localServer"`
-	PortViewer  PortViewerPrefs   `json:"portViewer"`
+	Cleaner     cleaner.Settings     `json:"cleaner"`
+	Sync        syncer.Config        `json:"sync"`
+	Theme       string               `json:"theme"`
+	LocalServer httpserver.Config    `json:"localServer"`
+	FtpServer   ftpserver.Config     `json:"ftpServer"`
+	SftpServer  ftpserver.SFTPConfig `json:"sftpServer"`
+	PortViewer  PortViewerPrefs      `json:"portViewer"`
 }
 
 // App 应用结构体
@@ -42,6 +45,8 @@ type App struct {
 	cleanerSvc *cleaner.Service
 	syncerSvc  *syncer.Service
 	httpServer *httpserver.Service
+	ftpServer  *ftpserver.Service
+	sftpServer *ftpserver.SFTPService
 	mu         sync.Mutex
 }
 
@@ -60,6 +65,8 @@ func (a *App) startup(ctx context.Context) {
 	a.cleanerSvc = cleaner.NewService(ctx)
 	a.syncerSvc = syncer.NewService(ctx)
 	a.httpServer = httpserver.NewService(ctx)
+	a.ftpServer = ftpserver.NewService(ctx)
+	a.sftpServer = ftpserver.NewSFTPService(ctx)
 }
 
 func (a *App) shutdown(ctx context.Context) {
@@ -71,6 +78,12 @@ func (a *App) shutdown(ctx context.Context) {
 	}
 	if a.httpServer != nil {
 		a.httpServer.StopWithTimeout(3 * time.Second)
+	}
+	if a.ftpServer != nil {
+		a.ftpServer.Stop()
+	}
+	if a.sftpServer != nil {
+		a.sftpServer.Stop()
 	}
 }
 
@@ -408,6 +421,56 @@ func (a *App) ListServerFiles(subPath string) []httpserver.FileItem {
 		return []httpserver.FileItem{}
 	}
 	return items
+}
+
+// ── FTP Server ──
+
+func (a *App) StartFTP(cfg ftpserver.Config) error {
+	return a.ftpServer.Start(cfg)
+}
+
+func (a *App) StopFTP() error {
+	return a.ftpServer.Stop()
+}
+
+func (a *App) GetFTPStatus() ftpserver.Status {
+	return a.ftpServer.Status()
+}
+
+func (a *App) GetFTPLogs(n int) []ftpserver.LogEntry {
+	return nil
+}
+
+func (a *App) GetFtpConfig() ftpserver.Config {
+	return a.config.FtpServer
+}
+
+func (a *App) SaveFtpConfig(cfg ftpserver.Config) error {
+	a.config.FtpServer = cfg
+	return a.saveConfig()
+}
+
+// ── SFTP Server ──
+
+func (a *App) StartSFTP(cfg ftpserver.SFTPConfig) error {
+	return a.sftpServer.Start(cfg)
+}
+
+func (a *App) StopSFTP() error {
+	return a.sftpServer.Stop()
+}
+
+func (a *App) GetSFTPStatus() ftpserver.SFTPStatus {
+	return a.sftpServer.Status()
+}
+
+func (a *App) GetSftpConfig() ftpserver.SFTPConfig {
+	return a.config.SftpServer
+}
+
+func (a *App) SaveSftpConfig(cfg ftpserver.SFTPConfig) error {
+	a.config.SftpServer = cfg
+	return a.saveConfig()
 }
 
 // ── Port Viewer ──

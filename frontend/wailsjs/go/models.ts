@@ -320,6 +320,131 @@ export namespace envreg {
 
 }
 
+export namespace ftpserver {
+	
+	export class Config {
+	    root: string;
+	    port: number;
+	    bindLocal: boolean;
+	    authEnabled: boolean;
+	    authUser: string;
+	    authPass: string;
+	    allowAnonymous: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Config(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.port = source["port"];
+	        this.bindLocal = source["bindLocal"];
+	        this.authEnabled = source["authEnabled"];
+	        this.authUser = source["authUser"];
+	        this.authPass = source["authPass"];
+	        this.allowAnonymous = source["allowAnonymous"];
+	    }
+	}
+	export class LogEntry {
+	    time: string;
+	    remoteAddr: string;
+	    command: string;
+	    args: string;
+	    response: string;
+	    code: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new LogEntry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.time = source["time"];
+	        this.remoteAddr = source["remoteAddr"];
+	        this.command = source["command"];
+	        this.args = source["args"];
+	        this.response = source["response"];
+	        this.code = source["code"];
+	    }
+	}
+	export class SFTPConfig {
+	    root: string;
+	    port: number;
+	    bindLocal: boolean;
+	    authUser: string;
+	    authPass: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SFTPConfig(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.port = source["port"];
+	        this.bindLocal = source["bindLocal"];
+	        this.authUser = source["authUser"];
+	        this.authPass = source["authPass"];
+	    }
+	}
+	export class SFTPStatus {
+	    running: boolean;
+	    root: string;
+	    port: number;
+	    bindLocal: boolean;
+	    startedAt: string;
+	    activeConns: number;
+	    urls: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new SFTPStatus(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.running = source["running"];
+	        this.root = source["root"];
+	        this.port = source["port"];
+	        this.bindLocal = source["bindLocal"];
+	        this.startedAt = source["startedAt"];
+	        this.activeConns = source["activeConns"];
+	        this.urls = source["urls"];
+	    }
+	}
+	export class Status {
+	    running: boolean;
+	    root: string;
+	    port: number;
+	    bindLocal: boolean;
+	    authEnabled: boolean;
+	    allowAnonymous: boolean;
+	    startedAt: string;
+	    activeConns: number;
+	    totalConns: number;
+	    urls: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Status(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.running = source["running"];
+	        this.root = source["root"];
+	        this.port = source["port"];
+	        this.bindLocal = source["bindLocal"];
+	        this.authEnabled = source["authEnabled"];
+	        this.allowAnonymous = source["allowAnonymous"];
+	        this.startedAt = source["startedAt"];
+	        this.activeConns = source["activeConns"];
+	        this.totalConns = source["totalConns"];
+	        this.urls = source["urls"];
+	    }
+	}
+
+}
+
 export namespace httpserver {
 	
 	export class Config {

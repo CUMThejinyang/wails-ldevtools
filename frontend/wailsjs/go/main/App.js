@@ -30,6 +30,18 @@ export function GetEnv(arg1, arg2) {
   return window['go']['main']['App']['GetEnv'](arg1, arg2);
 }
 
+export function GetFTPLogs(arg1) {
+  return window['go']['main']['App']['GetFTPLogs'](arg1);
+}
+
+export function GetFTPStatus() {
+  return window['go']['main']['App']['GetFTPStatus']();
+}
+
+export function GetFtpConfig() {
+  return window['go']['main']['App']['GetFtpConfig']();
+}
+
 export function GetHighRiskVariables() {
   return window['go']['main']['App']['GetHighRiskVariables']();
 }
@@ -42,12 +54,20 @@ export function GetPortViewerPrefs() {
   return window['go']['main']['App']['GetPortViewerPrefs']();
 }
 
+export function GetSFTPStatus() {
+  return window['go']['main']['App']['GetSFTPStatus']();
+}
+
 export function GetServerLogs(arg1) {
   return window['go']['main']['App']['GetServerLogs'](arg1);
 }
 
 export function GetServerStatus() {
   return window['go']['main']['App']['GetServerStatus']();
+}
+
+export function GetSftpConfig() {
+  return window['go']['main']['App']['GetSftpConfig']();
 }
 
 export function GetSyncConfig() {
@@ -158,6 +178,10 @@ export function SaveEnvBatch(arg1) {
   return window['go']['main']['App']['SaveEnvBatch'](arg1);
 }
 
+export function SaveFtpConfig(arg1) {
+  return window['go']['main']['App']['SaveFtpConfig'](arg1);
+}
+
 export function SaveLocalServerConfig(arg1) {
   return window['go']['main']['App']['SaveLocalServerConfig'](arg1);
 }
@@ -168,6 +192,10 @@ export function SavePath(arg1) {
 
 export function SavePortViewerPrefs(arg1) {
   return window['go']['main']['App']['SavePortViewerPrefs'](arg1);
+}
+
+export function SaveSftpConfig(arg1) {
+  return window['go']['main']['App']['SaveSftpConfig'](arg1);
 }
 
 export function SaveSyncConfig(arg1) {
@@ -202,6 +230,14 @@ export function StartClean(arg1) {
   return window['go']['main']['App']['StartClean'](arg1);
 }
 
+export function StartFTP(arg1) {
+  return window['go']['main']['App']['StartFTP'](arg1);
+}
+
+export function StartSFTP(arg1) {
+  return window['go']['main']['App']['StartSFTP'](arg1);
+}
+
 export function StartServer(arg1) {
   return window['go']['main']['App']['StartServer'](arg1);
 }
@@ -212,6 +248,14 @@ export function StartSync(arg1) {
 
 export function StopClean() {
   return window['go']['main']['App']['StopClean']();
+}
+
+export function StopFTP() {
+  return window['go']['main']['App']['StopFTP']();
+}
+
+export function StopSFTP() {
+  return window['go']['main']['App']['StopSFTP']();
 }
 
 export function StopServer() {
