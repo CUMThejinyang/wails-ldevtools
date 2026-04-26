@@ -24,6 +24,7 @@ export default function FTPConfigPanel({ onStatusChange }: Props) {
   const [config, setConfig] = useState<FTPConfig>(defaultConfig)
   const [status, setStatus] = useState<FTPStatus>({ running: false } as FTPStatus)
   const [error, setError] = useState<string>('')
+  const [stopping, setStopping] = useState(false)
 
   useEffect(() => {
     bridge.getFtpConfig().then((c) => {
@@ -37,7 +38,9 @@ export default function FTPConfigPanel({ onStatusChange }: Props) {
 
   useWailsEvent<{ running: boolean }>('server:ftp_status', (data) => {
     if (data && !data.running) {
+      setStopping(false)
       setStatus({ running: false } as FTPStatus)
+      onStatusChange?.(false)
     } else if (data) {
       bridge.getFTPStatus().then(setStatus).catch(() => {})
     }
@@ -71,11 +74,16 @@ export default function FTPConfigPanel({ onStatusChange }: Props) {
 
   const handleStop = useCallback(async () => {
     try {
+      setStopping(true)
       await bridge.stopFTP()
-      setStatus({ running: false } as FTPStatus)
+      const s = await bridge.getFTPStatus().catch(() => ({ running: false } as FTPStatus))
+      setStatus(s)
       message.success('FTP服务已停止')
-      onStatusChange?.(false)
+      if (!s.running) {
+        onStatusChange?.(false)
+      }
     } catch (err: any) {
+      setStopping(false)
       message.error(typeof err === 'string' ? err : err?.message || '停止失败')
     }
   }, [onStatusChange])
@@ -171,11 +179,12 @@ export default function FTPConfigPanel({ onStatusChange }: Props) {
         <Button
           danger
           icon={<StopOutlined />}
-          disabled={!status.running}
+          disabled={!status.running || stopping}
+          loading={stopping}
           onClick={handleStop}
           style={{ marginLeft: 8 }}
         >
-          停止
+          {stopping ? '停止中' : '停止'}
         </Button>
         {status.running && status.urls && status.urls.length > 0 && (
           <Button style={{ marginLeft: 8 }} onClick={handleOpenUrl}>

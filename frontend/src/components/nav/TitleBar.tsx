@@ -10,6 +10,7 @@ export default function TitleBar() {
   const [isMaximised, setIsMaximised] = useState(false)
   const [isPinned, setIsPinned] = useState(false)
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null)
+  const [isDraggingTitle, setIsDraggingTitle] = useState(false)
 
   useEffect(() => {
     const check = async () => {
@@ -32,11 +33,26 @@ export default function TitleBar() {
     } catch { /* ignore */ }
   }, [isPinned])
 
+  const handleDragStart = useCallback(() => {
+    setIsDraggingTitle(true)
+  }, [])
+
+  const handleDragEnd = useCallback(() => {
+    setIsDraggingTitle(false)
+  }, [])
+
   return (
     <div style={styles.bar}>
       <div
-        style={styles.drag}
+        style={{
+          ...styles.drag,
+          ...(isDraggingTitle ? styles.dragActive : null),
+        }}
         onDoubleClick={handleDoubleClick}
+        onPointerDown={handleDragStart}
+        onPointerUp={handleDragEnd}
+        onPointerCancel={handleDragEnd}
+        onMouseLeave={handleDragEnd}
       >
         <span style={styles.title}>DevTools</span>
       </div>
@@ -144,8 +160,14 @@ const styles: Record<string, React.CSSProperties> = {
     paddingLeft: 14,
     height: '100%',
     cursor: 'grab',
+    transition: 'background-color 0.12s ease, box-shadow 0.12s ease',
     ['--wails-draggable' as never]: 'drag',
   } as React.CSSProperties,
+  dragActive: {
+    cursor: 'grabbing',
+    backgroundColor: 'var(--color-active)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.22)',
+  },
   title: {
     fontSize: 12,
     fontWeight: 600,
@@ -159,7 +181,8 @@ const styles: Record<string, React.CSSProperties> = {
     height: '100%',
     paddingLeft: 8,
     paddingRight: 14,
-  },
+    ['--wails-draggable' as never]: 'no-drag',
+  } as React.CSSProperties,
   separator: {
     width: 1,
     height: 16,

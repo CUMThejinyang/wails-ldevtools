@@ -22,6 +22,7 @@ export default function SFTPConfigPanel({ onStatusChange }: Props) {
   const [config, setConfig] = useState<SFTPConfig>(defaultConfig)
   const [status, setStatus] = useState<SFTPStatus>({ running: false } as SFTPStatus)
   const [error, setError] = useState<string>('')
+  const [stopping, setStopping] = useState(false)
 
   useEffect(() => {
     bridge.getSftpConfig().then((c) => {
@@ -35,7 +36,9 @@ export default function SFTPConfigPanel({ onStatusChange }: Props) {
 
   useWailsEvent<{ running: boolean }>('server:sftp_status', (data) => {
     if (data && !data.running) {
+      setStopping(false)
       setStatus({ running: false } as SFTPStatus)
+      onStatusChange?.(false)
     } else if (data) {
       bridge.getSFTPStatus().then(setStatus).catch(() => {})
     }
@@ -69,11 +72,16 @@ export default function SFTPConfigPanel({ onStatusChange }: Props) {
 
   const handleStop = useCallback(async () => {
     try {
+      setStopping(true)
       await bridge.stopSFTP()
-      setStatus({ running: false } as SFTPStatus)
+      const s = await bridge.getSFTPStatus().catch(() => ({ running: false } as SFTPStatus))
+      setStatus(s)
       message.success('SFTP服务已停止')
-      onStatusChange?.(false)
+      if (!s.running) {
+        onStatusChange?.(false)
+      }
     } catch (err: any) {
+      setStopping(false)
       message.error(typeof err === 'string' ? err : err?.message || '停止失败')
     }
   }, [onStatusChange])
@@ -160,11 +168,12 @@ export default function SFTPConfigPanel({ onStatusChange }: Props) {
         <Button
           danger
           icon={<StopOutlined />}
-          disabled={!status.running}
+          disabled={!status.running || stopping}
+          loading={stopping}
           onClick={handleStop}
           style={{ marginLeft: 8 }}
         >
-          停止
+          {stopping ? '停止中' : '停止'}
         </Button>
         {status.running && status.urls && status.urls.length > 0 && (
           <Button style={{ marginLeft: 8 }} onClick={handleOpenUrl}>

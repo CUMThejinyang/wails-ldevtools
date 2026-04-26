@@ -49,19 +49,21 @@ type LogEntry struct {
 }
 
 type Service struct {
-	ctx       context.Context
-	cfg       Config
-	mu        sync.Mutex
-	running   atomic.Bool
-	startedAt time.Time
-	connCount int32
-	totalConn int64
-	server    *ftpserver.FtpServer
-	driver    *ftpDriver
+	ctx         context.Context
+	cfg         Config
+	mu          sync.Mutex
+	running     atomic.Bool
+	startedAt   time.Time
+	connCount   int32
+	totalConn   int64
+	server      *ftpserver.FtpServer
+	driver      *ftpDriver
+	serveDone   chan struct{}
+	activeConns map[ftpserver.ClientContext]struct{}
 }
 
 func NewService(ctx context.Context) *Service {
-	return &Service{ctx: ctx}
+	return &Service{ctx: ctx, activeConns: make(map[ftpserver.ClientContext]struct{})}
 }
 
 func (s *Service) IsRunning() bool {
@@ -137,16 +139,20 @@ func (s *Service) Start(cfg Config) error {
 	s.startedAt = time.Now()
 	s.connCount = 0
 	s.totalConn = 0
+	s.activeConns = make(map[ftpserver.ClientContext]struct{})
 	s.mu.Unlock()
 
 	driver := &ftpDriver{svc: s, cfg: cfg}
 	s.driver = driver
 
 	server := ftpserver.NewFtpServer(driver)
+	serveDone := make(chan struct{})
 	s.server = server
+	s.serveDone = serveDone
 	s.running.Store(true)
 
 	go func() {
+		defer close(serveDone)
 		if err := server.ListenAndServe(); err != nil && s.running.Load() {
 			s.running.Store(false)
 			runtime.EventsEmit(s.ctx, "server:ftp_status", map[string]interface{}{"running": false, "error": err.Error()})
@@ -160,15 +166,51 @@ func (s *Service) Stop() error {
 	if !s.running.Load() {
 		return nil
 	}
-	s.running.Store(false)
-	if s.server != nil {
-		s.server.Stop()
+
+	s.mu.Lock()
+	server := s.server
+	serveDone := s.serveDone
+	activeConns := make([]ftpserver.ClientContext, 0, len(s.activeConns))
+	for conn := range s.activeConns {
+		activeConns = append(activeConns, conn)
 	}
+	s.mu.Unlock()
+
+	s.running.Store(false)
+	for _, conn := range activeConns {
+		_ = conn.Close()
+	}
+	if server != nil {
+		server.Stop()
+	}
+	if serveDone != nil {
+		<-serveDone
+	}
+
+	s.mu.Lock()
+	s.server = nil
+	s.serveDone = nil
+	s.activeConns = make(map[ftpserver.ClientContext]struct{})
+	s.mu.Unlock()
+
+	runtime.EventsEmit(s.ctx, "server:ftp_status", map[string]interface{}{"running": false})
 	return nil
 }
 
-func (s *Service) addConn()    { atomic.AddInt64(&s.totalConn, 1); atomic.AddInt32(&s.connCount, 1) }
-func (s *Service) removeConn() { atomic.AddInt32(&s.connCount, -1) }
+func (s *Service) addConn(cc ftpserver.ClientContext) {
+	atomic.AddInt64(&s.totalConn, 1)
+	atomic.AddInt32(&s.connCount, 1)
+	s.mu.Lock()
+	s.activeConns[cc] = struct{}{}
+	s.mu.Unlock()
+}
+
+func (s *Service) removeConn(cc ftpserver.ClientContext) {
+	atomic.AddInt32(&s.connCount, -1)
+	s.mu.Lock()
+	delete(s.activeConns, cc)
+	s.mu.Unlock()
+}
 
 func (s *Service) emitLog(remoteAddr, cmd, args, resp string, code int) {
 	entry := LogEntry{
@@ -208,12 +250,12 @@ func (d *ftpDriver) listenAddr() string {
 }
 
 func (d *ftpDriver) ClientConnected(cc ftpserver.ClientContext) (string, error) {
-	d.svc.addConn()
+	d.svc.addConn(cc)
 	return "Welcome to DevTools FTP Server", nil
 }
 
 func (d *ftpDriver) ClientDisconnected(cc ftpserver.ClientContext) {
-	d.svc.removeConn()
+	d.svc.removeConn(cc)
 }
 
 func (d *ftpDriver) AuthUser(cc ftpserver.ClientContext, user, pass string) (ftpserver.ClientDriver, error) {

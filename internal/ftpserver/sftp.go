@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/pkg/sftp"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -38,17 +39,20 @@ type SFTPStatus struct {
 }
 
 type SFTPService struct {
-	ctx       context.Context
-	listener  net.Listener
-	cfg       SFTPConfig
-	mu        sync.Mutex
-	running   atomic.Bool
-	startedAt time.Time
-	connCount int32
+	ctx         context.Context
+	listener    net.Listener
+	cfg         SFTPConfig
+	mu          sync.Mutex
+	running     atomic.Bool
+	startedAt   time.Time
+	connCount   int32
+	connWG      sync.WaitGroup
+	acceptWG    sync.WaitGroup
+	activeConns map[net.Conn]struct{}
 }
 
 func NewSFTPService(ctx context.Context) *SFTPService {
-	return &SFTPService{ctx: ctx}
+	return &SFTPService{ctx: ctx, activeConns: make(map[net.Conn]struct{})}
 }
 
 func (s *SFTPService) IsRunning() bool {
@@ -128,6 +132,7 @@ func (s *SFTPService) Start(cfg SFTPConfig) error {
 	s.startedAt = time.Now()
 	s.connCount = 0
 	s.listener = listener
+	s.activeConns = make(map[net.Conn]struct{})
 	s.mu.Unlock()
 
 	s.running.Store(true)
@@ -157,14 +162,40 @@ func (s *SFTPService) Stop() error {
 	if !s.running.Load() {
 		return nil
 	}
+
 	s.running.Store(false)
-	if s.listener != nil {
-		s.listener.Close()
+
+	s.mu.Lock()
+	listener := s.listener
+	activeConns := make([]net.Conn, 0, len(s.activeConns))
+	for conn := range s.activeConns {
+		activeConns = append(activeConns, conn)
 	}
+	s.mu.Unlock()
+
+	if listener != nil {
+		listener.Close()
+	}
+	for _, conn := range activeConns {
+		conn.Close()
+	}
+
+	s.acceptWG.Wait()
+	s.connWG.Wait()
+
+	s.mu.Lock()
+	s.listener = nil
+	s.activeConns = make(map[net.Conn]struct{})
+	s.mu.Unlock()
+
+	runtime.EventsEmit(s.ctx, "server:sftp_status", map[string]interface{}{"running": false})
 	return nil
 }
 
 func (s *SFTPService) acceptLoop(listener net.Listener, config *ssh.ServerConfig, root string) {
+	s.acceptWG.Add(1)
+	defer s.acceptWG.Done()
+
 	for s.running.Load() {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -174,12 +205,16 @@ func (s *SFTPService) acceptLoop(listener net.Listener, config *ssh.ServerConfig
 			continue
 		}
 		atomic.AddInt32(&s.connCount, 1)
+		s.trackConn(conn)
+		s.connWG.Add(1)
 		go s.handleSSHConn(conn, config, root)
 	}
 }
 
 func (s *SFTPService) handleSSHConn(netConn net.Conn, config *ssh.ServerConfig, root string) {
+	defer s.connWG.Done()
 	defer func() {
+		s.untrackConn(netConn)
 		atomic.AddInt32(&s.connCount, -1)
 		netConn.Close()
 	}()
@@ -232,6 +267,18 @@ func (s *SFTPService) handleSession(ch ssh.Channel, reqs <-chan *ssh.Request, ro
 			req.Reply(false, nil)
 		}
 	}
+}
+
+func (s *SFTPService) trackConn(conn net.Conn) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.activeConns[conn] = struct{}{}
+}
+
+func (s *SFTPService) untrackConn(conn net.Conn) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.activeConns, conn)
 }
 
 func loadOrGenerateHostKey() (ssh.Signer, error) {
