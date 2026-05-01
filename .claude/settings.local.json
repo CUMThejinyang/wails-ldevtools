@@ -11,7 +11,8 @@
       "WebSearch",
       "Bash(npm view:*)",
       "Bash(pnpm add:*)",
-      "Bash(openspec new:*)"
+      "Bash(openspec new:*)",
+      "PowerShell(wails build *)"
     ]
   }
 }

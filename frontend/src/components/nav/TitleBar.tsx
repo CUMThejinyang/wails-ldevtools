@@ -42,12 +42,17 @@ export default function TitleBar() {
   }, [])
 
   // Wails 拖动窗口时系统接管鼠标，pointerUp 不会在标题栏触发，
-  // 需要监听全局 pointerup 确保释放时重置 cursor 状态
+  // 拖动结束后窗口重新获得焦点时重置 cursor 状态
   useEffect(() => {
     if (!isDraggingTitle) return
     const onGlobalUp = () => setIsDraggingTitle(false)
+    const onFocus = () => setIsDraggingTitle(false)
     window.addEventListener('pointerup', onGlobalUp)
-    return () => window.removeEventListener('pointerup', onGlobalUp)
+    window.addEventListener('focus', onFocus)
+    return () => {
+      window.removeEventListener('pointerup', onGlobalUp)
+      window.removeEventListener('focus', onFocus)
+    }
   }, [isDraggingTitle])
 
   return (
@@ -61,7 +66,6 @@ export default function TitleBar() {
         onPointerDown={handleDragStart}
         onPointerUp={handleDragEnd}
         onPointerCancel={handleDragEnd}
-        onMouseLeave={handleDragEnd}
       >
         <span style={styles.title}>DevTools</span>
       </div>

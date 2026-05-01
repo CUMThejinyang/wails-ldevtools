@@ -179,6 +179,8 @@ export default function PortTable({
   }, [data, filter.portKeyword, filter.pidKeyword, filter.processKeyword, filter.protocol, filter.family, filter.states])
 
   const rowSelection = {
+    columnWidth: 40,
+    fixed: true as const,
     selectedRowKeys,
     onChange: (keys: React.Key[]) => {
       onSelectedRowKeysChange(keys as string[])
