@@ -1,5 +1,6 @@
 import { CopyOutlined, GlobalOutlined, QrcodeOutlined, ReloadOutlined } from '@ant-design/icons'
-import { Button, Tag, Tooltip, message } from 'antd'
+import { Button, Tag, Tooltip } from 'antd'
+import { message } from '@/services/message'
 import type { ServerStatus } from '@/types'
 import QrPopover from './QrPopover'
 

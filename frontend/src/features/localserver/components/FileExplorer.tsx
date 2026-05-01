@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Checkbox, Table, Tooltip, Breadcrumb, Empty, message } from 'antd'
+import { Button, Checkbox, Table, Tooltip, Breadcrumb, Empty } from 'antd'
+import { message } from '@/services/message'
 import {
   DownloadOutlined,
   FolderOutlined,

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Button, Tabs, Input, Switch, Tag, Spin, Modal, message } from 'antd'
+import { Button, Tabs, Input, Switch, Tag, Spin, Modal } from 'antd'
+import { message } from '@/services/message'
 import {
   PlusOutlined, PlayCircleOutlined, StopOutlined,
   DeleteOutlined, EditOutlined, FolderOutlined,

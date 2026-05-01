@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { ConfigProvider } from 'antd'
+import { App as AntdApp, ConfigProvider } from 'antd'
+import { _initMessageApi } from '@/services/message'
 import TitleBar from '@/components/nav/TitleBar'
 import Sidebar from '@/components/nav/Sidebar'
 import CleanerPage from '@/features/cleaner'
@@ -37,7 +38,9 @@ export default function App() {
 
   return (
     <ConfigProvider theme={buildAntdTheme(theme)}>
-      <div style={styles.root}>
+      <AntdApp>
+        <MessageInit />
+        <div style={styles.root}>
         <TitleBar />
         <div style={styles.body}>
           <Sidebar
@@ -77,8 +80,15 @@ export default function App() {
           </main>
         </div>
       </div>
+      </AntdApp>
     </ConfigProvider>
   )
+}
+
+function MessageInit() {
+  const { message } = AntdApp.useApp()
+  useEffect(() => { _initMessageApi(message) }, [message])
+  return null
 }
 
 const styles: Record<string, React.CSSProperties> = {

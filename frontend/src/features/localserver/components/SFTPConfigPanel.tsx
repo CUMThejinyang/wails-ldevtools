@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Button, Input, InputNumber, Switch, message, Space, Typography } from 'antd'
+import { Button, Input, InputNumber, Switch, Space, Typography } from 'antd'
+import { message } from '@/services/message'
 import { CopyOutlined, FolderOpenOutlined, PlayCircleOutlined, StopOutlined, SaveOutlined } from '@ant-design/icons'
 import { bridge } from '@/services/bridge'
 import { useWailsEvent } from '@/hooks/useWailsEvent'

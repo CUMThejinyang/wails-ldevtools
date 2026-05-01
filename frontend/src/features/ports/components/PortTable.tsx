@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from 'react'
-import { Table, Button, Tag, Modal, message, Tooltip, theme } from 'antd'
+import { Table, Button, Tag, Modal, Tooltip, theme } from 'antd'
+import { message } from '@/services/message'
 import { GlobalOutlined, StopOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import type { TableProps } from 'antd'

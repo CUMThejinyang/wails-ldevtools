@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CloudServerOutlined, EyeOutlined, FolderOpenOutlined, ProfileOutlined } from '@ant-design/icons'
-import { Button, Tag, message, Tabs } from 'antd'
+import { Button, Tag, Tabs } from 'antd'
+import { message } from '@/services/message'
 import PageShell from '@/components/layout/PageShell'
 import SectionCard from '@/components/layout/SectionCard'
 import { bridge } from '@/services/bridge'

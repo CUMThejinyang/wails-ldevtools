@@ -1,4 +1,5 @@
-import { Button, Input, message } from 'antd'
+import { Button, Input } from 'antd'
+import { message } from '@/services/message'
 import { FolderOpenOutlined } from '@ant-design/icons'
 import { bridge } from '@/services/bridge'
 

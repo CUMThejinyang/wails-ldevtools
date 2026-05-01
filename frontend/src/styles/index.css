@@ -323,7 +323,7 @@ input, textarea, .selectable {
 .ports-kill-confirm .ant-modal-confirm-body .anticon,
 .ports-kill-confirm .ant-modal-close,
 .ports-kill-confirm .ant-modal-close-x {
-  color: rgba(255, 255, 245, 0.9) !important;
+  color: var(--color-text) !important;
 }
 
 .ports-kill-confirm .ant-btn {
@@ -332,7 +332,7 @@ input, textarea, .selectable {
 
 .ports-kill-confirm .ant-btn-default {
   background: var(--color-background-soft) !important;
-  color: rgba(255, 255, 245, 0.9) !important;
+  color: var(--color-text) !important;
 }
 
 .ports-kill-confirm .ant-btn-dangerous,

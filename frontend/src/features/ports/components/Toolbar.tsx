@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Input, Segmented, Select, Button, Tag, Modal, message, theme } from 'antd'
+import { Input, Segmented, Select, Button, Tag, Modal, theme } from 'antd'
+import { message } from '@/services/message'
 import {
   ReloadOutlined,
   DeleteOutlined,
