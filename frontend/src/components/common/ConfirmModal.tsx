@@ -1,4 +1,4 @@
-import { Modal } from 'antd'
+import type { ModalStaticFunctions } from 'antd/es/modal/confirm'
 import type { ReactNode } from 'react'
 
 interface OpenArgs {
@@ -11,8 +11,8 @@ interface OpenArgs {
   onCancel?: () => void
 }
 
-export function openConfirm(args: OpenArgs) {
-  return Modal.confirm({
+export function openConfirm(modal: Omit<ModalStaticFunctions, 'warn'>, args: OpenArgs) {
+  return modal.confirm({
     title: args.title,
     content: args.content,
     okText: args.okText ?? '确认',

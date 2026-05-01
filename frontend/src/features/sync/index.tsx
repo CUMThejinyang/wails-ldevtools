@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
-  Button, Tabs, Switch, Modal, Table, Tag, Tooltip, Spin, message,
+  Button, Tabs, Switch, Modal, Table, Tag, Tooltip, Spin,
 } from 'antd'
+import { useMessage } from '@/hooks/useMessage'
 import {
   PlayCircleOutlined, StopOutlined, EyeOutlined,
   SwapOutlined, FolderOutlined, ReloadOutlined,
@@ -47,6 +48,7 @@ interface ConflictReq {
 }
 
 export default function SyncPage() {
+  const message = useMessage()
   const [tab, setTab] = useState<TabKey>('config')
   const [src, setSrc] = useState('')
   const [dst, setDst] = useState('')

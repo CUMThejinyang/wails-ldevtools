@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Checkbox, Table, Tooltip, Breadcrumb, Empty, message } from 'antd'
+import { Button, Checkbox, Table, Tooltip, Breadcrumb, Empty } from 'antd'
+import { useMessage } from '@/hooks/useMessage'
 import {
   DownloadOutlined,
   FolderOutlined,
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function FileExplorer({ status }: Props) {
+  const message = useMessage()
   const [files, setFiles] = useState<FileItem[]>([])
   const [loading, setLoading] = useState(false)
   const [currentPath, setCurrentPath] = useState('')

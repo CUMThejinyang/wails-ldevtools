@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CloudServerOutlined, EyeOutlined, FolderOpenOutlined, ProfileOutlined } from '@ant-design/icons'
-import { Button, Tag, message, Tabs } from 'antd'
+import { Button, Tag, Tabs } from 'antd'
+import { useMessage } from '@/hooks/useMessage'
 import PageShell from '@/components/layout/PageShell'
 import SectionCard from '@/components/layout/SectionCard'
 import { bridge } from '@/services/bridge'
@@ -27,6 +28,7 @@ const defaultConfig: LocalServerConfig = {
 }
 
 export default function LocalServerPage() {
+  const message = useMessage()
   const [config, setConfig] = useState<LocalServerConfig>(defaultConfig)
   const [status, setStatus] = useState<ServerStatus>({ running: false } as ServerStatus)
   const [error, setError] = useState<string>('')

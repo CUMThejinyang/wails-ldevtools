@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from 'react'
-import { Table, Button, Tag, Modal, message, Tooltip, theme } from 'antd'
+import { Table, Button, Tag, Tooltip, theme } from 'antd'
+import { useMessage, useModal } from '@/hooks/useMessage'
 import { GlobalOutlined, StopOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import type { TableProps } from 'antd'
@@ -52,6 +53,8 @@ export default function PortTable({
   onKillDone,
 }: Props) {
   const { token } = theme.useToken()
+  const message = useMessage()
+  const modal = useModal()
   const containerRef = useRef<HTMLDivElement>(null)
   const [tableHeight, setTableHeight] = useState<number>(400)
 
@@ -69,7 +72,7 @@ export default function PortTable({
   }, [])
 
   const handleKill = useCallback((entry: PortEntry) => {
-    Modal.confirm({
+    modal.confirm({
       title: `确认结束进程`,
       content: `即将结束 ${entry.processName} (PID ${entry.pid})`,
       okText: '结束',

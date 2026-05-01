@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Button, Tabs, Input, Switch, Tag, Spin, Modal, message } from 'antd'
+import { Button, Tabs, Input, Switch, Tag, Spin, Modal } from 'antd'
+import { useMessage } from '@/hooks/useMessage'
 import {
   PlusOutlined, PlayCircleOutlined, StopOutlined,
   DeleteOutlined, EditOutlined, FolderOutlined,
@@ -24,6 +25,7 @@ type ProgressMap = Record<string, CleanProgress>
 type TabKey = 'config' | 'progress' | 'result'
 
 export default function CleanerPage() {
+  const message = useMessage()
   const [settings, setSettings] = useState<CleanerSettings>(DEFAULT_SETTINGS)
   const [progress, setProgress] = useState<ProgressMap>({})
   const [result, setResult] = useState<OverallResult | null>(null)

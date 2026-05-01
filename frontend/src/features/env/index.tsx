@@ -39,6 +39,7 @@ import Toolbar from '@/components/layout/Toolbar'
 import EmptyState from '@/components/feedback/EmptyState'
 import PathPicker from '@/components/form/PathPicker'
 import { bridge } from '@/services/bridge'
+import { useMessage, useModal } from '@/hooks/useMessage'
 import type {
   BackupMeta,
   BackupSnapshot,
@@ -101,6 +102,7 @@ const TYPE_OPTIONS = [
 
 export default function EnvPage() {
   const [messageApi, contextHolder] = message.useMessage()
+  const modal = useModal()
   const [activeTab, setActiveTab] = useState<TabKey>('variables')
   const [loading, setLoading] = useState(true)
   const [entries, setEntries] = useState<EnvEntry[]>([])
@@ -293,7 +295,7 @@ export default function EnvPage() {
       applyDelete()
       return
     }
-    Modal.confirm({
+    modal.confirm({
       title: '确认删除高风险变量',
       content: `${entry.name} 可能影响终端、系统路径或程序启动。确认继续吗？`,
       okText: '确认删除',
@@ -423,7 +425,7 @@ export default function EnvPage() {
   }
 
   const handleDeleteBackup = (backup: BackupMeta) => {
-    Modal.confirm({
+    modal.confirm({
       title: '确认删除快照',
       content: `将删除 ${formatBackupTime(backup.timestamp)} 的快照。`,
       okText: '删除',
@@ -443,7 +445,7 @@ export default function EnvPage() {
 
   const handleCreateSnapshot = () => {
     let note = ''
-    Modal.confirm({
+    modal.confirm({
       title: '创建快照',
       content: (
         <Input

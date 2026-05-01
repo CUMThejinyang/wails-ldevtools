@@ -1,5 +1,6 @@
 import { CopyOutlined, GlobalOutlined, QrcodeOutlined, ReloadOutlined } from '@ant-design/icons'
-import { Button, Tag, Tooltip, message } from 'antd'
+import { Button, Tag, Tooltip } from 'antd'
+import { useMessage } from '@/hooks/useMessage'
 import type { ServerStatus } from '@/types'
 import QrPopover from './QrPopover'
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function AddressList({ status }: Props) {
+  const message = useMessage()
   if (!status.running) {
     return (
       <div style={styles.empty}>

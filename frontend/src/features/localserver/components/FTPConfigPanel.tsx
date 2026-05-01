@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Button, Input, InputNumber, Switch, message, Space, Typography } from 'antd'
+import { Button, Input, InputNumber, Switch, Space, Typography } from 'antd'
+import { useMessage } from '@/hooks/useMessage'
 import { CopyOutlined, FolderOpenOutlined, PlayCircleOutlined, StopOutlined, SaveOutlined } from '@ant-design/icons'
 import { bridge } from '@/services/bridge'
 import { useWailsEvent } from '@/hooks/useWailsEvent'
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export default function FTPConfigPanel({ onStatusChange }: Props) {
+  const message = useMessage()
   const [config, setConfig] = useState<FTPConfig>(defaultConfig)
   const [status, setStatus] = useState<FTPStatus>({ running: false } as FTPStatus)
   const [error, setError] = useState<string>('')

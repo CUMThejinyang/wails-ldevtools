@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Input, Segmented, Select, Button, Tag, Modal, message, theme } from 'antd'
+import { Input, Segmented, Select, Button, Tag, theme } from 'antd'
+import { useMessage, useModal } from '@/hooks/useMessage'
 import {
   ReloadOutlined,
   DeleteOutlined,
@@ -47,6 +48,8 @@ export default function Toolbar({
   onKillDone,
 }: Props) {
   const { token } = theme.useToken()
+  const message = useMessage()
+  const modal = useModal()
   const [elevated, setElevated] = useState(false)
 
   useEffect(() => {
@@ -70,7 +73,7 @@ export default function Toolbar({
       return `${name} (PID ${pid})`
     })
 
-    Modal.confirm({
+    modal.confirm({
       title: `确认结束 ${selectedPids.length} 个进程`,
       content: (
         <div>

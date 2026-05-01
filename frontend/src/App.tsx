@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ConfigProvider } from 'antd'
+import { ConfigProvider, App as AntdApp } from 'antd'
 import TitleBar from '@/components/nav/TitleBar'
 import Sidebar from '@/components/nav/Sidebar'
 import CleanerPage from '@/features/cleaner'
@@ -37,7 +37,8 @@ export default function App() {
 
   return (
     <ConfigProvider theme={buildAntdTheme(theme)}>
-      <div style={styles.root}>
+      <AntdApp>
+        <div style={styles.root}>
         <TitleBar />
         <div style={styles.body}>
           <Sidebar
@@ -77,6 +78,7 @@ export default function App() {
           </main>
         </div>
       </div>
+      </AntdApp>
     </ConfigProvider>
   )
 }

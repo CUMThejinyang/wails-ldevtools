@@ -1,4 +1,5 @@
-import { Button, Input, message } from 'antd'
+import { Button, Input } from 'antd'
+import { useMessage } from '@/hooks/useMessage'
 import { FolderOpenOutlined } from '@ant-design/icons'
 import { bridge } from '@/services/bridge'
 
@@ -21,6 +22,7 @@ export default function PathPicker({
   mode = 'directory',
   title,
 }: Props) {
+  const message = useMessage()
   const pick = async () => {
     try {
       const picked = mode === 'file'
