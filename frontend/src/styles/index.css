@@ -354,3 +354,14 @@ input, textarea, .selectable {
   background: rgba(0, 185, 107, 0.18);
   outline: 1px solid rgba(0, 185, 107, 0.55);
 }
+
+/* ── Message / Notification 亮色主题修正 ── */
+/* antd message 挂载在 body 下，静态 API 绕过 ConfigProvider，需手动覆盖 */
+body[theme-mode='light'] .ant-message-notice-content {
+  background-color: #ffffff;
+  color: rgba(0, 0, 0, 0.88);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08), 0 3px 6px rgba(0, 0, 0, 0.06);
+}
+body[theme-mode='light'] .ant-message-notice-content .anticon {
+  color: inherit;
+}
