@@ -41,6 +41,15 @@ export default function TitleBar() {
     setIsDraggingTitle(false)
   }, [])
 
+  // Wails 拖动窗口时系统接管鼠标，pointerUp 不会在标题栏触发，
+  // 需要监听全局 pointerup 确保释放时重置 cursor 状态
+  useEffect(() => {
+    if (!isDraggingTitle) return
+    const onGlobalUp = () => setIsDraggingTitle(false)
+    window.addEventListener('pointerup', onGlobalUp)
+    return () => window.removeEventListener('pointerup', onGlobalUp)
+  }, [isDraggingTitle])
+
   return (
     <div style={styles.bar}>
       <div
