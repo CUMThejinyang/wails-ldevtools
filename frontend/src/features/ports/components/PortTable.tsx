@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from 'react'
-import { Table, Button, Tag, Tooltip, theme } from 'antd'
+import { Table, Button, Tag, Tooltip } from 'antd'
 import { useMessage, useModal } from '@/hooks/useMessage'
 import { GlobalOutlined, StopOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
@@ -52,7 +52,6 @@ export default function PortTable({
   onSelectedPidsChange,
   onKillDone,
 }: Props) {
-  const { token } = theme.useToken()
   const message = useMessage()
   const modal = useModal()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -73,41 +72,12 @@ export default function PortTable({
 
   const handleKill = useCallback((entry: PortEntry) => {
     modal.confirm({
-      title: `确认结束进程`,
+      title: '确认结束进程',
       content: `即将结束 ${entry.processName} (PID ${entry.pid})`,
       okText: '结束',
-      okButtonProps: {
-        danger: true,
-        style: {
-          background: token.colorError,
-          borderColor: token.colorError,
-          color: token.colorText,
-        },
-      },
+      okButtonProps: { danger: true },
       cancelText: '取消',
-      cancelButtonProps: {
-        style: {
-          background: token.colorBgContainer,
-          borderColor: token.colorBorder,
-          color: token.colorText,
-        },
-      },
       centered: true,
-      rootClassName: 'ports-kill-confirm',
-      styles: {
-        content: {
-          background: token.colorBgElevated,
-        },
-        header: {
-          background: token.colorBgElevated,
-        },
-        body: {
-          background: token.colorBgElevated,
-        },
-        footer: {
-          background: token.colorBgElevated,
-        },
-      },
       onOk: async () => {
         try {
           await bridge.killPortProcess(entry.pid)
@@ -123,7 +93,7 @@ export default function PortTable({
         onKillDone()
       },
     })
-  }, [onKillDone, token.colorBgContainer, token.colorBgElevated, token.colorBorder, token.colorError, token.colorText])
+  }, [modal, message, onKillDone])
 
   const handleOpenBrowser = useCallback(async (port: number) => {
     try {

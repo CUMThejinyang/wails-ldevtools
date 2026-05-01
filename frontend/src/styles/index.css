@@ -306,42 +306,6 @@ input, textarea, .selectable {
   border-inline-start-color: var(--color-border);
 }
 
-/* ── Ports Kill Confirm ── */
-.ports-kill-confirm .ant-modal-content,
-.ports-kill-confirm .ant-modal-header,
-.ports-kill-confirm .ant-modal-body,
-.ports-kill-confirm .ant-modal-footer,
-.ports-kill-confirm .ant-modal-confirm-body-wrapper {
-  background: var(--color-background-mute) !important;
-}
-
-.ports-kill-confirm .ant-modal-confirm-title,
-.ports-kill-confirm .ant-modal-confirm-content,
-.ports-kill-confirm .ant-modal-confirm-content p,
-.ports-kill-confirm .ant-modal-confirm-content li,
-.ports-kill-confirm .ant-modal-confirm-content div,
-.ports-kill-confirm .ant-modal-confirm-body .anticon,
-.ports-kill-confirm .ant-modal-close,
-.ports-kill-confirm .ant-modal-close-x {
-  color: rgba(255, 255, 245, 0.9) !important;
-}
-
-.ports-kill-confirm .ant-btn {
-  border-color: var(--color-border) !important;
-}
-
-.ports-kill-confirm .ant-btn-default {
-  background: var(--color-background-soft) !important;
-  color: rgba(255, 255, 245, 0.9) !important;
-}
-
-.ports-kill-confirm .ant-btn-dangerous,
-.ports-kill-confirm .ant-btn-color-dangerous,
-.ports-kill-confirm .ant-btn-variant-solid.ant-btn-color-dangerous {
-  background: var(--color-error) !important;
-  border-color: var(--color-error) !important;
-  color: #ffffff !important;
-}
 
 /* ── 正则匹配高亮装饰 ── */
 .regex-match-highlight {
