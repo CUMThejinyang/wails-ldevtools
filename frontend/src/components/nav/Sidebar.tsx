@@ -10,6 +10,7 @@ const NAV_ITEMS: { id: PageId; icon: React.ReactNode; label: string }[] = [
   { id: 'env',     icon: <FunctionOutlined style={{ fontSize: 18 }} />, label: '环境变量' },
   { id: 'localserver', icon: <CloudServerOutlined style={{ fontSize: 18 }} />, label: '本地服务' },
   { id: 'ports',   icon: <ApiOutlined style={{ fontSize: 18 }} />,       label: '端口占用' },
+  { id: 'apidebug', icon: <ApiOutlined style={{ fontSize: 18 }} />,     label: 'API 调试器' },
 ]
 
 interface Props {

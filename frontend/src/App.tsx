@@ -8,6 +8,7 @@ import CodecPage from '@/features/codec'
 import EnvPage from '@/features/env'
 import LocalServerPage from '@/features/localserver'
 import PortsPage from '@/features/ports'
+import ApiDebugPage from '@/features/apidebug'
 import SettingsPage from '@/features/settings'
 import { KeepAlive } from '@/app/keepalive'
 import { applyThemeAttribute, buildAntdTheme } from '@/app/theme'
@@ -71,6 +72,9 @@ export default function App() {
             </div>
             <div className="page-slot" style={activePage === 'ports' ? styles.pageSlot : styles.pageHidden}>
               <KeepAlive id="ports"><PortsPage /></KeepAlive>
+            </div>
+            <div className="page-slot" style={activePage === 'apidebug' ? styles.pageSlot : styles.pageHidden}>
+              <KeepAlive id="apidebug"><ApiDebugPage /></KeepAlive>
             </div>
             <div className="page-slot" style={activePage === 'settings' ? styles.pageSlot : styles.pageHidden}>
               <KeepAlive id="settings"><SettingsPage theme={theme} onToggleTheme={onToggleTheme} /></KeepAlive>
