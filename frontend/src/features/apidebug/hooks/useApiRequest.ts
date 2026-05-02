@@ -46,7 +46,7 @@ export function useApiRequest() {
     request: ApiRequest,
     config: ApiGlobalConfig,
     activeEnvId: string | null,
-  ) => {
+  ): Promise<ResponseSnapshot | null> => {
     setLoading(true)
     setError(null)
     setResponse(null)
@@ -123,7 +123,7 @@ export function useApiRequest() {
       const responseText = await fetchResponse.text()
       const endTime = performance.now()
 
-      setResponse({
+      const snapshot: ResponseSnapshot = {
         status: fetchResponse.status,
         statusText: fetchResponse.statusText,
         headers: responseHeaders,
@@ -131,9 +131,12 @@ export function useApiRequest() {
         size: new Blob([responseText]).size,
         durationMs: Math.round(endTime - startTime),
         cookies,
-      })
+      }
+      setResponse(snapshot)
+      return snapshot
     } catch (err: any) {
       setError(err?.message || String(err))
+      return null
     } finally {
       setLoading(false)
     }
