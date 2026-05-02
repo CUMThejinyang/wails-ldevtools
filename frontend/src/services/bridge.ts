@@ -1,4 +1,5 @@
 import type {
+  ApiGlobalConfig,
   BackupMeta,
   BackupSnapshot,
   BatchSaveResult,
@@ -140,6 +141,12 @@ export const bridge = {
   openInBrowser: (url: string) => call<void>('OpenInBrowser', url),
   getPortViewerPrefs: () => call<PortViewerPrefs>('GetPortViewerPrefs'),
   savePortViewerPrefs: (prefs: PortViewerPrefs) => call<void>('SavePortViewerPrefs', prefs),
+
+  // API Debugger
+  getApiConfig: () => call<ApiGlobalConfig>('GetApiConfig'),
+  saveApiConfig: (cfg: ApiGlobalConfig) => call<void>('SaveApiConfig', cfg),
+  readTextFile: (path: string) => call<string>('ReadTextFile', path),
+  writeTextFile: (path: string, content: string) => call<void>('WriteTextFile', path, content),
 }
 
 export function formatBytes(bytes: number): string {

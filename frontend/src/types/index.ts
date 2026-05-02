@@ -123,7 +123,7 @@ export interface ImportPreview {
   errors: ImportError[]
 }
 
-export type PageId = 'cleaner' | 'sync' | 'codec' | 'env' | 'localserver' | 'ports' | 'settings'
+export type PageId = 'cleaner' | 'sync' | 'codec' | 'env' | 'localserver' | 'ports' | 'settings' | 'apidebug'
 
 // ── Sync ──
 export type ConflictMode = 'overwrite' | 'skip' | 'ask'
@@ -276,4 +276,99 @@ export interface SFTPStatus {
   startedAt: string
   activeConns: number
   urls: string[]
+}
+
+// ── API Debugger ──
+
+export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS'
+
+export interface ApiKvPair {
+  key: string
+  value: string
+  enabled: boolean
+  description?: string
+}
+
+export interface ApiFormItem extends ApiKvPair {
+  type: 'text' | 'file'
+  filePath?: string
+}
+
+export type ApiBodyType = 'none' | 'json' | 'form-data' | 'urlencoded' | 'raw'
+
+export interface ApiRequestBody {
+  type: ApiBodyType
+  jsonContent?: string
+  formItems?: ApiFormItem[]
+  urlencodedItems?: ApiKvPair[]
+  rawContent?: string
+  rawContentType?: string
+}
+
+export interface ApiAuth {
+  type: 'none' | 'bearer' | 'basic'
+  token?: string
+  username?: string
+  password?: string
+}
+
+export interface ApiRequest {
+  id: string
+  name: string
+  method: ApiMethod
+  url: string
+  params: ApiKvPair[]
+  headers: ApiKvPair[]
+  body: ApiRequestBody
+  auth: ApiAuth
+}
+
+export interface ResponseSnapshot {
+  status: number
+  statusText: string
+  headers: Record<string, string>
+  body: string
+  size: number
+  durationMs: number
+  cookies: ApiCookieEntry[]
+}
+
+export interface ApiCookieEntry {
+  name: string
+  value: string
+  domain: string
+  path: string
+  expires?: string
+  httpOnly: boolean
+  secure: boolean
+}
+
+export interface HistoryEntry {
+  id: string
+  timestamp: number
+  request: ApiRequest
+  response: ResponseSnapshot
+  usedEnvId: string | null
+}
+
+export interface ApiEnv {
+  id: string
+  name: string
+  variables: ApiKvPair[]
+  headers: ApiKvPair[]
+}
+
+export interface ApiCollection {
+  id: string
+  name: string
+  children: (ApiCollection | ApiRequest)[]
+  headers: ApiKvPair[]
+}
+
+export interface ApiGlobalConfig {
+  globalHeaders: ApiKvPair[]
+  environments: ApiEnv[]
+  activeEnvId: string | null
+  collections: ApiCollection[]
+  historyLimit: number
 }
