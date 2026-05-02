@@ -154,7 +154,7 @@ export default function ApiDebugPage() {
           <UrlBar
             method={request.method}
             url={request.url}
-            envNames={config.environments.map(e => e.name)}
+            environments={config.environments}
             activeEnvId={config.activeEnvId}
             onMethodChange={(m) => setRequest(r => ({ ...r, method: m }))}
             onUrlChange={(url) => setRequest(r => ({ ...r, url }))}
@@ -230,7 +230,7 @@ export default function ApiDebugPage() {
               const removeFrom = (items: (ApiCollection | ApiRequest)[]): (ApiCollection | ApiRequest)[] =>
                 items.filter(item => {
                   if (item.id === id) return false
-                  if ('children' in item) item.children = removeFrom(item.children)
+                  if ('children' in item) return { ...item, children: removeFrom(item.children) }
                   return true
                 })
               saveConfig({ collections: removeFrom(config.collections) as ApiCollection[] })
@@ -247,7 +247,7 @@ export default function ApiDebugPage() {
             <UrlBar
               method={request.method}
               url={request.url}
-              envNames={config.environments.map(e => e.name)}
+              environments={config.environments}
               activeEnvId={config.activeEnvId}
               onMethodChange={(m) => setRequest(r => ({ ...r, method: m }))}
               onUrlChange={(url) => setRequest(r => ({ ...r, url }))}

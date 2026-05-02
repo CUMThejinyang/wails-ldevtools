@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Tabs, Select } from 'antd'
 import KvEditor from './KvEditor'
 import type { ApiRequest, ApiKvPair, ApiBodyType } from '@/types'
@@ -11,10 +10,7 @@ interface RequestPanelProps {
 export default function RequestPanel({ request, onChange }: RequestPanelProps) {
   const update = (patch: Partial<ApiRequest>) => onChange({ ...request, ...patch })
 
-  const [bodyType, setBodyType] = useState<ApiBodyType>(request.body?.type || 'none')
-
   const handleBodyTypeChange = (t: ApiBodyType) => {
-    setBodyType(t)
     onChange({
       ...request,
       body: { type: t, jsonContent: '', formItems: [], urlencodedItems: [], rawContent: '', rawContentType: '' },
@@ -22,6 +18,7 @@ export default function RequestPanel({ request, onChange }: RequestPanelProps) {
   }
 
   const renderBodyEditor = () => {
+    const bodyType = request.body?.type || 'none'
     if (bodyType === 'none') return <div style={{ padding: 12, color: 'var(--color-text-3)' }}>此请求无请求体</div>
     if (bodyType === 'json') {
       return (
@@ -137,7 +134,7 @@ export default function RequestPanel({ request, onChange }: RequestPanelProps) {
           children: (
             <div style={styles.bodyContainer}>
               <Select
-                value={bodyType}
+                value={request.body?.type || 'none'}
                 onChange={handleBodyTypeChange}
                 size="small"
                 style={{ width: 160, marginBottom: 8 }}

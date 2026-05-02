@@ -1,7 +1,7 @@
 // frontend/src/features/apidebug/components/UrlBar.tsx
 import { Select, Input, Button } from 'antd'
 import { SendOutlined, SaveOutlined } from '@ant-design/icons'
-import type { ApiMethod } from '@/types'
+import type { ApiMethod, ApiEnv } from '@/types'
 
 const METHOD_COLORS: Record<string, string> = {
   GET: '#61affe', POST: '#49cc90', PUT: '#fca130',
@@ -11,7 +11,7 @@ const METHOD_COLORS: Record<string, string> = {
 interface UrlBarProps {
   method: ApiMethod
   url: string
-  envNames: string[]
+  environments: ApiEnv[]
   activeEnvId: string | null
   onMethodChange: (m: ApiMethod) => void
   onUrlChange: (url: string) => void
@@ -21,7 +21,7 @@ interface UrlBarProps {
   loading: boolean
 }
 
-export default function UrlBar({ method, url, envNames, activeEnvId, onMethodChange, onUrlChange, onEnvChange, onSend, onSave, loading }: UrlBarProps) {
+export default function UrlBar({ method, url, environments, activeEnvId, onMethodChange, onUrlChange, onEnvChange, onSend, onSave, loading }: UrlBarProps) {
   return (
     <div style={styles.container}>
       <Select
@@ -49,7 +49,7 @@ export default function UrlBar({ method, url, envNames, activeEnvId, onMethodCha
         style={{ width: 110 }}
         placeholder="无环境"
         allowClear
-        options={envNames.map((name) => ({ value: name, label: name }))}
+        options={environments.map((env) => ({ value: env.id, label: env.name }))}
       />
       <Button type="primary" size="small" icon={<SendOutlined />} onClick={onSend} loading={loading}>
         发送
