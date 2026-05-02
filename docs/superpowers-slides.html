@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superpowers 技能框架教程</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --green: #00b96b;
+    --green-dim: #00904f;
+    --bg0: #111;
+    --bg1: #181818;
+    --bg2: #222;
+    --bg3: #2a2a2a;
+    --border: rgba(255,255,255,0.1);
+    --text: #e8e8e8;
+    --text-dim: #888;
+    --yellow: #f5c518;
+    --red: #ff5f57;
+    --blue: #4a9eff;
+    --purple: #b48ead;
+  }
+
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg0);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── Slide Container ── */
+  .deck { width: 100%; height: 100vh; position: relative; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    padding: 52px 72px 72px;
+    background: var(--bg1);
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .slide.active {
+    display: flex;
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .slide.exit {
+    display: flex;
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  /* ── Progress Bar ── */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: var(--green);
+    transition: width .4s ease;
+    z-index: 100;
+  }
+
+  /* ── Slide Counter ── */
+  .counter {
+    position: fixed;
+    bottom: 20px; right: 28px;
+    font-size: 12px;
+    color: var(--text-dim);
+    z-index: 100;
+  }
+
+  /* ── Nav Buttons ── */
+  .nav {
+    position: fixed;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 12px;
+    z-index: 100;
+  }
+  .nav button {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all .2s;
+  }
+  .nav button:hover { border-color: var(--green); color: var(--green); }
+  .nav button:disabled { opacity: .3; cursor: default; }
+
+  /* ── Typography ── */
+  .slide-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-size: 38px;
+    font-weight: 700;
+    margin-bottom: 28px;
+    color: #fff;
+  }
+  h3 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 14px;
+  }
+  .subtitle {
+    font-size: 20px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    max-width: 640px;
+  }
+  p { font-size: 16px; line-height: 1.75; color: var(--text); }
+
+  /* ── Highlight Box ── */
+  .callout {
+    background: var(--bg2);
+    border-left: 3px solid var(--green);
+    border-radius: 4px;
+    padding: 18px 22px;
+    margin: 18px 0;
+    font-size: 17px;
+    line-height: 1.65;
+  }
+  .callout.red  { border-color: var(--red); }
+  .callout.blue { border-color: var(--blue); }
+  .callout.yellow { border-color: var(--yellow); }
+
+  /* ── Code ── */
+  pre, code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 14px;
+  }
+  pre {
+    background: var(--bg0);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 22px;
+    overflow-x: auto;
+    line-height: 1.6;
+    margin: 14px 0;
+  }
+  code {
+    background: var(--bg3);
+    padding: 2px 7px;
+    border-radius: 3px;
+    color: var(--green);
+    font-size: 13px;
+  }
+  pre code { background: none; padding: 0; color: inherit; font-size: 14px; }
+
+  /* ── Grid / Cards ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 22px;
+  }
+  .card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 10px;
+  }
+  .card p { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 10px 0;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--bg3);
+    color: var(--green);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+
+  /* ── List ── */
+  ul, ol { padding-left: 22px; }
+  li { font-size: 15px; line-height: 2; color: var(--text); }
+  li + li { }
+
+  /* ── Badge ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 2px 3px;
+  }
+  .badge-green { background: rgba(0,185,107,.15); color: var(--green); border: 1px solid rgba(0,185,107,.3); }
+  .badge-yellow { background: rgba(245,197,24,.12); color: var(--yellow); border: 1px solid rgba(245,197,24,.3); }
+  .badge-red { background: rgba(255,95,87,.12); color: var(--red); border: 1px solid rgba(255,95,87,.3); }
+  .badge-blue { background: rgba(74,158,255,.12); color: var(--blue); border: 1px solid rgba(74,158,255,.3); }
+  .badge-purple { background: rgba(180,142,173,.12); color: var(--purple); border: 1px solid rgba(180,142,173,.3); }
+
+  /* ── Flow ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .flow-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 18px;
+    background: var(--bg2);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .flow-num {
+    min-width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #000;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .flow-text { font-size: 14px; line-height: 1.55; color: var(--text); }
+  .flow-sub { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+
+  /* ── TDD Colors ── */
+  .tdd-red { color: var(--red); font-weight: 700; }
+  .tdd-green { color: var(--green); font-weight: 700; }
+  .tdd-blue { color: var(--blue); font-weight: 700; }
+
+  /* ── Special slides ── */
+  .slide-cover {
+    background: radial-gradient(ellipse at 30% 40%, rgba(0,185,107,.12) 0%, transparent 60%),
+                var(--bg1);
+    justify-content: center;
+  }
+  .slide-cover h1 { font-size: 64px; }
+
+  .accent { color: var(--green); }
+  .dim    { color: var(--text-dim); }
+
+  .two-col { display: flex; gap: 40px; flex: 1; }
+  .two-col > * { flex: 1; }
+
+  .spacer { flex: 1; }
+  .mt8 { margin-top: 8px; }
+  .mt16 { margin-top: 16px; }
+  .mt24 { margin-top: 24px; }
+
+  /* Scroll within slide */
+  .scroll-content {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 8px;
+  }
+  .scroll-content::-webkit-scrollbar { width: 4px; }
+  .scroll-content::-webkit-scrollbar-track { background: transparent; }
+  .scroll-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Keyboard hint */
+  .kbd-hint {
+    position: fixed;
+    bottom: 20px; left: 28px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .kbd {
+    display: inline-block;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: monospace;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="counter" id="counter"></div>
+<div class="kbd-hint"><span class="kbd">←</span> <span class="kbd">→</span> 或点击按钮翻页</div>
+
+<div class="deck" id="deck">
+
+  <!-- ══════════════════════════════ SLIDE 01 ══════════════════════════════ -->
+  <div class="slide slide-cover active">
+    <div class="slide-tag">内部技术分享</div>
+    <h1>Superpowers<br><span class="accent">技能框架</span></h1>
+    <p class="subtitle mt16">给 Claude Code 立规矩——让 AI 真正可靠地做工程</p>
+    <div class="spacer"></div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <span class="badge badge-green">设计先于编码</span>
+      <span class="badge badge-blue">测试先于实现</span>
+      <span class="badge badge-yellow">根因先于修复</span>
+      <span class="badge badge-purple">证据先于结论</span>
+    </div>
+    <p class="dim mt16" style="font-size:13px">24 个技能 · 中文适配 · 开源免费</p>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 02 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">问题背景</div>
+    <h2>没有 Superpowers，AI 会怎样？</h2>
+    <table>
+      <thead>
+        <tr><th>你说的</th><th>AI 的默认行为</th><th>结果</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"帮我加搜索功能"</td>
+          <td>立刻开始写代码</td>
+          <td><span class="badge badge-red">写出来的不是你要的</span></td>
+        </tr>
+        <tr>
+          <td>遇到 bug</td>
+          <td>随机猜测式修改</td>
+          <td><span class="badge badge-red">改了 3 次还没好</span></td>
+        </tr>
+        <tr>
+          <td>说"完成了"</td>
+          <td>没有运行任何验证</td>
+          <td><span class="badge badge-red">其实有问题没发现</span></td>
+        </tr>
+        <tr>
+          <td>收到代码审查</td>
+          <td>立刻全部接受</td>
+          <td><span class="badge badge-red">引入了不适合的代码</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout mt24">
+      <strong>核心问题：</strong>AI 的"自然行为"是直接执行，而不是先想清楚。<br>
+      Superpowers 就是给 AI <span class="accent">建立工作规范</span>的工具。
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 03 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">什么是 Superpowers</div>
+    <h2>它是一套工程文化插件</h2>
+    <div class="two-col">
+      <div>
+        <h3>本质</h3>
+        <p>一组 Markdown 文件（技能），安装到 Claude Code 后，<strong>强制 AI 在关键节点遵守规范</strong>，而不是一拿到任务就直接写代码。</p>
+        <div class="callout mt16" style="font-size:15px">
+          "把优秀工程师的工作习惯，变成 AI 必须遵守的规则。"
+        </div>
+        <h3 class="mt24">安装方式</h3>
+        <pre>/plugin install superpowers@claude-plugins-official</pre>
+        <p class="dim" style="font-size:13px">安装后新开会话即生效，无需手动触发</p>
+      </div>
+      <div>
+        <h3>包含什么</h3>
+        <div class="flow">
+          <div class="flow-item">
+            <div class="flow-num">24</div>
+            <div class="flow-text">个技能文件</div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num" style="background:var(--blue)">5</div>
+            <div class="flow-text">大类（流程骨干、质量保障、隔离并行、中文特色、专项工具）</div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num" style="background:var(--purple)">∞</div>
+            <div class="flow-text">可自定义扩展，添加团队特有规范</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 04 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">技能地图</div>
+    <h2>24 个技能，一眼看清</h2>
+    <div class="grid-2" style="gap:14px;margin-top:4px">
+      <div>
+        <h3>开发流程骨干（必学）</h3>
+        <table>
+          <tbody>
+            <tr><td><code>brainstorming</code></td><td>需求分析 & 方案设计</td></tr>
+            <tr><td><code>writing-plans</code></td><td>编写实现计划</td></tr>
+            <tr><td><code>executing-plans</code></td><td>手动逐步执行</td></tr>
+            <tr><td><code>subagent-driven-dev</code></td><td>子 AI 自动执行★</td></tr>
+            <tr><td><code>finishing-a-branch</code></td><td>完成收尾</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3>质量保障（核心习惯）</h3>
+        <table>
+          <tbody>
+            <tr><td><code>test-driven-dev</code></td><td>先写测试再写代码</td></tr>
+            <tr><td><code>systematic-debugging</code></td><td>先找根因再修复</td></tr>
+            <tr><td><code>verification</code></td><td>有证据才能说完成</td></tr>
+            <tr><td><code>requesting-review</code></td><td>请求代码审查</td></tr>
+            <tr><td><code>receiving-review</code></td><td>正确处理审查反馈</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3>隔离 & 并行</h3>
+        <table>
+          <tbody>
+            <tr><td><code>git-worktrees</code></td><td>隔离工作区</td></tr>
+            <tr><td><code>parallel-agents</code></td><td>并行分派多 AI</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3>中国特色</h3>
+        <table>
+          <tbody>
+            <tr><td><code>chinese-commit</code></td><td>中文提交规范</td></tr>
+            <tr><td><code>chinese-code-review</code></td><td>中文审查风格</td></tr>
+            <tr><td><code>chinese-git-workflow</code></td><td>Gitee/Coding 适配</td></tr>
+            <tr><td><code>chinese-docs</code></td><td>中文文档规范</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 05 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">核心工作流</div>
+    <h2>从需求到上线的标准流程</h2>
+    <div class="two-col">
+      <div class="flow" style="gap:8px">
+        <div class="flow-item">
+          <div class="flow-num">你</div>
+          <div>
+            <div class="flow-text" style="font-weight:600">提出需求</div>
+            <div class="flow-sub">"帮我加一个用户搜索功能"</div>
+          </div>
+        </div>
+        <div style="text-align:center;color:var(--green);font-size:20px">↓</div>
+        <div class="flow-item" style="border-color:var(--green)">
+          <div class="flow-num">1</div>
+          <div>
+            <div class="flow-text"><strong>brainstorming</strong> — 需求分析 & 方案设计</div>
+            <div class="flow-sub">问清楚 → 提方案 → 你批准 → 写设计文档</div>
+          </div>
+        </div>
+        <div style="text-align:center;color:var(--green);font-size:20px">↓ 你批准设计</div>
+        <div class="flow-item" style="border-color:var(--blue)">
+          <div class="flow-num" style="background:var(--blue)">2</div>
+          <div>
+            <div class="flow-text"><strong>writing-plans</strong> — 编写实现计划</div>
+            <div class="flow-sub">拆解成 2-5 分钟一步的小任务，保存到 docs/</div>
+          </div>
+        </div>
+        <div style="text-align:center;color:var(--green);font-size:20px">↓ 二选一执行</div>
+        <div style="display:flex;gap:8px">
+          <div class="flow-item" style="flex:1;border-color:var(--green)">
+            <div>
+              <div class="flow-text"><strong>subagent-driven</strong></div>
+              <div class="flow-sub">★ 推荐，自动化</div>
+            </div>
+          </div>
+          <div class="flow-item" style="flex:1">
+            <div>
+              <div class="flow-text"><strong>executing-plans</strong></div>
+              <div class="flow-sub">手动，可插手</div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;color:var(--green);font-size:20px">↓ 全部完成</div>
+        <div class="flow-item" style="border-color:var(--yellow)">
+          <div class="flow-num" style="background:var(--yellow);color:#000">3</div>
+          <div>
+            <div class="flow-text"><strong>finishing-a-branch</strong> — 收尾</div>
+            <div class="flow-sub">合并 / 创建 PR / 保持现状 / 丢弃</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3>贯穿全程的三个习惯</h3>
+        <div class="callout" style="margin-bottom:12px">
+          <span class="tdd-red">🔴</span> <strong>TDD</strong><br>
+          <span class="dim" style="font-size:13px">写代码前先写测试</span>
+        </div>
+        <div class="callout red" style="margin-bottom:12px">
+          <span class="accent">🔍</span> <strong>系统化调试</strong><br>
+          <span class="dim" style="font-size:13px">遇到 bug 先找根因</span>
+        </div>
+        <div class="callout yellow">
+          <span class="tdd-green">✓</span> <strong>完成前验证</strong><br>
+          <span class="dim" style="font-size:13px">拿出证据再说"完成了"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 06 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">技能详解 01</div>
+    <h2><code>brainstorming</code> — 需求设计</h2>
+    <div class="callout red" style="margin-bottom:20px">
+      <strong>铁律：</strong>设计方案没有获得你的批准之前，<strong>不能写任何代码</strong>。
+    </div>
+    <div class="two-col">
+      <div>
+        <h3>9 步流程</h3>
+        <div class="flow" style="gap:5px">
+          <div class="flow-item"><div class="flow-num">1</div><div class="flow-text">探索项目上下文（代码、文档、git 历史）</div></div>
+          <div class="flow-item"><div class="flow-num">2</div><div class="flow-text">如有视觉问题，提供原型（独立消息）</div></div>
+          <div class="flow-item"><div class="flow-num">3</div><div class="flow-text">每次只问一个澄清问题（优先选择题）</div></div>
+          <div class="flow-item"><div class="flow-num">4</div><div class="flow-text">提出 2-3 种方案 + 权衡 + 推荐</div></div>
+          <div class="flow-item"><div class="flow-num">5</div><div class="flow-text">分节展示设计，获得你的批准</div></div>
+          <div class="flow-item"><div class="flow-num">6</div><div class="flow-text">编写设计文档到 docs/superpowers/specs/</div></div>
+          <div class="flow-item"><div class="flow-num">7</div><div class="flow-text">规格自检（占位符、矛盾、模糊点）</div></div>
+          <div class="flow-item"><div class="flow-num">8</div><div class="flow-text">请你审查书面规格</div></div>
+          <div class="flow-item"><div class="flow-num">9</div><div class="flow-text">调用 writing-plans 开始计划</div></div>
+        </div>
+      </div>
+      <div>
+        <h3>实际对话示例</h3>
+        <pre style="font-size:12px;line-height:1.7">你：帮我加用户搜索功能
+
+AI：[探索代码]
+
+AI：搜索是实时的（边输边搜）
+    还是按回车后才搜？
+
+你：按回车后搜
+
+AI：我有 3 个方案：
+    A：前端过滤（快，但数据多时慢）
+    B：后端 API 搜索 ★推荐
+    C：全文检索（最强，新依赖）
+
+    推荐 B，因为...
+
+你：用方案 B
+
+AI：[展示详细设计]
+    [你确认后写设计文档]</pre>
+        <div class="callout" style="font-size:13px">
+          <strong>关键：</strong>每次只问一个问题，避免信息过载
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 07 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">技能详解 02</div>
+    <h2><code>writing-plans</code> — 编写实现计划</h2>
+    <div class="two-col">
+      <div>
+        <h3>核心原则</h3>
+        <ul style="margin-bottom:16px">
+          <li>每步只做 <strong>2-5 分钟</strong>的工作</li>
+          <li>每步必须有<strong>实际代码</strong></li>
+          <li>禁止写 "待定"、"TODO"、"后续实现"</li>
+          <li>保存到 <code>docs/superpowers/plans/</code></li>
+          <li>保存后 commit 到 git</li>
+        </ul>
+        <div class="callout yellow" style="font-size:14px">
+          <strong>计划的粒度举例：</strong><br>
+          ✓ "编写失败的测试" — 一步<br>
+          ✓ "运行它确认失败" — 一步<br>
+          ✓ "实现最少代码让测试通过" — 一步<br>
+          ✓ "Commit" — 一步
+        </div>
+      </div>
+      <div>
+        <h3>计划文档格式</h3>
+        <pre style="font-size:12px;line-height:1.65"># 用户搜索功能实现计划
+
+**目标：** 为列表页添加搜索功能
+
+### 任务 1：后端搜索接口
+
+**文件：**
+- 修改：`src/api/users.ts`
+- 测试：`tests/api/users.test.ts`
+
+- [ ] 步骤 1：编写失败的测试
+  ```typescript
+  test('按名称搜索', async () => {
+    const res = await get('/api/users?q=张三')
+    expect(res.body).toContainEqual({name:'张三'})
+  })
+  ```
+- [ ] 步骤 2：运行测试，确认失败
+- [ ] 步骤 3：实现最少代码
+- [ ] 步骤 4：运行测试，确认通过
+- [ ] 步骤 5：Commit</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 08 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">技能详解 03</div>
+    <h2><code>test-driven-development</code> — TDD</h2>
+    <div class="callout red" style="margin-bottom:18px">
+      <strong>铁律：</strong>如果你先写了代码再写测试 → <strong>删掉代码，从头开始</strong>。没有例外。
+    </div>
+    <div class="two-col">
+      <div>
+        <h3>红-绿-重构 三步循环</h3>
+        <div class="flow" style="gap:6px">
+          <div class="flow-item" style="border-color:var(--red)">
+            <div class="flow-num" style="background:var(--red)">🔴</div>
+            <div>
+              <div class="flow-text"><strong>红灯</strong>：先写一个失败的测试</div>
+              <div class="flow-sub">运行并确认它"正确地失败"（不是报错，是断言失败）</div>
+            </div>
+          </div>
+          <div class="flow-item" style="border-color:var(--green)">
+            <div class="flow-num">🟢</div>
+            <div>
+              <div class="flow-text"><strong>绿灯</strong>：写最少的代码让测试通过</div>
+              <div class="flow-sub">不要过度设计，刚好通过就行</div>
+            </div>
+          </div>
+          <div class="flow-item" style="border-color:var(--blue)">
+            <div class="flow-num" style="background:var(--blue)">🔵</div>
+            <div>
+              <div class="flow-text"><strong>重构</strong>：在绿灯下清理代码</div>
+              <div class="flow-sub">消除重复、改名、提取函数，保持测试全绿</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3>为什么顺序很重要？</h3>
+        <table>
+          <thead><tr><th>先写测试</th><th>后补测试</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="color:var(--green)">测试必然先失败，证明它在测真实的东西</td>
+              <td style="color:var(--red)">测试立即通过，什么都证明不了</td>
+            </tr>
+            <tr>
+              <td style="color:var(--green)">回答"代码<strong>应该</strong>做什么"</td>
+              <td style="color:var(--red)">回答"代码<strong>已经</strong>做了什么"</td>
+            </tr>
+            <tr>
+              <td style="color:var(--green)">发现你没想到的边界情况</td>
+              <td style="color:var(--red)">只验证你记得的情况</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3 class="mt16">常见借口 & 真相</h3>
+        <table>
+          <tbody>
+            <tr><td>"太简单不用测"</td><td style="color:var(--text-dim)">简单代码也出 bug，测试 30 秒</td></tr>
+            <tr><td>"之后补测试"</td><td style="color:var(--text-dim)">后补的立即通过，没用</td></tr>
+            <tr><td>"手动测过了"</td><td style="color:var(--text-dim)">不可重复，改代码就要重测</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 09 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">技能详解 04</div>
+    <h2><code>systematic-debugging</code> — 系统化调试</h2>
+    <div class="callout red" style="margin-bottom:18px">
+      <strong>铁律：</strong>不做根因调查，不许提修复方案。<br>
+      <span style="font-size:13px;color:var(--text-dim)">3 次修复都失败 → 停下来质疑架构，不要尝试第 4 次</span>
+    </div>
+    <div class="two-col">
+      <div>
+        <h3>四阶段流程</h3>
+        <div class="flow" style="gap:6px">
+          <div class="flow-item">
+            <div class="flow-num">1</div>
+            <div>
+              <div class="flow-text"><strong>根因调查</strong></div>
+              <div class="flow-sub">读错误信息 · 稳定复现 · 检查近期变更 · 追踪数据流</div>
+            </div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num">2</div>
+            <div>
+              <div class="flow-text"><strong>模式分析</strong></div>
+              <div class="flow-sub">找正常工作的相似代码，列出所有差异</div>
+            </div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num">3</div>
+            <div>
+              <div class="flow-text"><strong>假设验证</strong></div>
+              <div class="flow-sub">提出具体假设，最小化测试，一次只改一个变量</div>
+            </div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num">4</div>
+            <div>
+              <div class="flow-text"><strong>实施修复</strong></div>
+              <div class="flow-sub">先写失败测试 → 修复根因 → 验证通过</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3>对比：正确 vs 错误</h3>
+        <div style="background:rgba(255,95,87,.08);border:1px solid rgba(255,95,87,.3);border-radius:6px;padding:14px 16px;margin-bottom:12px">
+          <div style="color:var(--red);font-weight:600;margin-bottom:8px">❌ 随机猜测式修复</div>
+          <div style="font-size:13px;color:var(--text-dim);line-height:1.7">
+            "测试失败了，让我随便改改看..."<br>
+            改了一处 → 还是失败 → 再改一处 → 又出新问题<br>
+            → <strong>两小时过去了</strong>
+          </div>
+        </div>
+        <div style="background:rgba(0,185,107,.08);border:1px solid rgba(0,185,107,.3);border-radius:6px;padding:14px 16px">
+          <div style="color:var(--green);font-weight:600;margin-bottom:8px">✓ 系统化调试</div>
+          <div style="font-size:13px;color:var(--text-dim);line-height:1.7">
+            1. 读错误："期望 'hello'，得到 undefined"<br>
+            2. 追踪：getGreeting() 没有 return<br>
+            3. 假设：缺少 return 语句<br>
+            4. 最小验证：加上 return → PASS ✓<br>
+            → <strong>10 分钟搞定</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 10 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">技能详解 05</div>
+    <h2><code>verification-before-completion</code> — 完成前验证</h2>
+    <div class="callout red" style="margin-bottom:20px">
+      <strong>铁律：</strong>没有新鲜的验证证据，不许宣称完成。
+    </div>
+    <div class="two-col">
+      <div>
+        <h3>五步门控流程</h3>
+        <div class="flow" style="gap:6px">
+          <div class="flow-item"><div class="flow-num">1</div><div class="flow-text">确定：什么命令能证明这个结论？</div></div>
+          <div class="flow-item"><div class="flow-num">2</div><div class="flow-text">运行：完整执行（重新跑，不能用之前的结果）</div></div>
+          <div class="flow-item"><div class="flow-num">3</div><div class="flow-text">阅读：完整看输出，统计失败数</div></div>
+          <div class="flow-item"><div class="flow-num">4</div><div class="flow-text">判断：输出是否真的支持这个结论？</div></div>
+          <div class="flow-item" style="border-color:var(--green)"><div class="flow-num">5</div><div class="flow-text"><strong>只有这时，才能说"完成"</strong></div></div>
+        </div>
+      </div>
+      <div>
+        <h3>禁止用词</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+          <span class="badge badge-red">"应该能行"</span>
+          <span class="badge badge-red">"大概通过了"</span>
+          <span class="badge badge-red">"我有信心"</span>
+          <span class="badge badge-red">"看起来对了"</span>
+          <span class="badge badge-red">"应该没问题"</span>
+        </div>
+        <h3>正确 vs 错误</h3>
+        <div style="background:rgba(255,95,87,.08);border:1px solid rgba(255,95,87,.3);border-radius:6px;padding:12px 14px;margin-bottom:8px;font-size:13px;color:var(--text-dim)">
+          ❌ AI："我修改了代码，测试应该能通过了。"<br>
+          <span style="color:var(--red)">（没有运行，纯靠感觉）</span>
+        </div>
+        <div style="background:rgba(0,185,107,.08);border:1px solid rgba(0,185,107,.3);border-radius:6px;padding:12px 14px;font-size:13px;color:var(--text-dim)">
+          ✓ AI："运行 npm test..."<br>
+          [输出：34 passing, 0 failing]<br>
+          <span style="color:var(--green)">"全部 34 个测试通过。"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 11 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">技能详解 06</div>
+    <h2><code>subagent-driven-development</code> — 子 AI 驱动</h2>
+    <div class="callout" style="margin-bottom:16px">
+      <strong>为什么推荐这个？</strong> 每个任务用全新的子 AI 执行，上下文干净，两层质检自动化。
+    </div>
+    <div class="two-col">
+      <div>
+        <h3>每个任务的流程</h3>
+        <div class="flow" style="gap:5px">
+          <div class="flow-item"><div class="flow-num">→</div><div class="flow-text">主 AI 派遣「<strong>实现子 AI</strong>」</div></div>
+          <div class="flow-item" style="margin-left:24px"><div class="flow-num" style="background:var(--blue)">↓</div><div class="flow-text">子 AI：写代码 + 写测试 + commit + 自检</div></div>
+          <div class="flow-item"><div class="flow-num">→</div><div class="flow-text">主 AI 派遣「<strong>规格审查子 AI</strong>」</div></div>
+          <div class="flow-item" style="margin-left:24px"><div class="flow-num" style="background:var(--yellow);color:#000">?</div><div class="flow-text">符合计划要求？不符合 → 修复 → 重审</div></div>
+          <div class="flow-item"><div class="flow-num">→</div><div class="flow-text">主 AI 派遣「<strong>代码质量审查子 AI</strong>」</div></div>
+          <div class="flow-item" style="margin-left:24px"><div class="flow-num" style="background:var(--yellow);color:#000">?</div><div class="flow-text">代码质量合格？不合格 → 修复 → 重审</div></div>
+          <div class="flow-item" style="border-color:var(--green)"><div class="flow-num">✓</div><div class="flow-text"><strong>任务完成，进入下一个</strong></div></div>
+        </div>
+      </div>
+      <div>
+        <h3>vs 手动执行计划</h3>
+        <table>
+          <thead><tr><th></th><th>subagent-driven</th><th>executing-plans</th></tr></thead>
+          <tbody>
+            <tr><td>推荐程度</td><td style="color:var(--green)">★★★ 推荐</td><td>★★</td></tr>
+            <tr><td>自动化</td><td style="color:var(--green)">全自动</td><td>手动逐步</td></tr>
+            <tr><td>质量审查</td><td style="color:var(--green)">双层自动</td><td>人工</td></tr>
+            <tr><td>适合场景</td><td>快速推进</td><td>需要精细控制</td></tr>
+          </tbody>
+        </table>
+        <div class="callout mt16" style="font-size:13px">
+          <strong>注：</strong>需要平台支持子智能体（Claude Code 支持）。<br>
+          不支持的平台用 executing-plans。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 12 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">技能详解 07</div>
+    <h2><code>finishing-a-development-branch</code> — 收尾</h2>
+    <div class="callout red" style="margin-bottom:20px">
+      <strong>铁律：</strong>测试没通过之前，不提供任何选项。
+    </div>
+    <div class="two-col">
+      <div>
+        <h3>完整流程</h3>
+        <div class="flow" style="gap:6px">
+          <div class="flow-item"><div class="flow-num">1</div><div class="flow-text"><strong>验证测试</strong>：跑测试套件，全部通过才继续</div></div>
+          <div class="flow-item"><div class="flow-num">2</div><div class="flow-text"><strong>确认基础分支</strong>：是 main 还是 master？</div></div>
+          <div class="flow-item" style="border-color:var(--green)"><div class="flow-num">3</div><div class="flow-text"><strong>展示 4 个选项</strong>（让你选择）</div></div>
+          <div class="flow-item"><div class="flow-num">4</div><div class="flow-text"><strong>执行选择</strong>并清理工作树</div></div>
+        </div>
+      </div>
+      <div>
+        <h3>4 个选项详解</h3>
+        <table>
+          <thead><tr><th>选项</th><th>做什么</th><th>适用场景</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-green">1. 本地合并</span></td>
+              <td>合并到主分支，删除功能分支</td>
+              <td>个人项目</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue">2. 创建 PR</span></td>
+              <td>push 并自动创建 Pull Request</td>
+              <td>需要 Review</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-yellow">3. 保持现状</span></td>
+              <td>先不动，你稍后处理</td>
+              <td>未准备好</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red">4. 丢弃</span></td>
+              <td>删除（需输入 'discard' 确认）</td>
+              <td>思路不对</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 13 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">技能详解 08</div>
+    <h2>代码审查：请求 & 接收</h2>
+    <div class="grid-2">
+      <div>
+        <h3>requesting-code-review — 请求审查</h3>
+        <p style="margin-bottom:12px;font-size:14px">AI 自动派遣专门的审查子 AI 进行代码审查。</p>
+        <p style="font-size:14px;margin-bottom:12px"><strong>必须审查的时机：</strong></p>
+        <ul style="font-size:14px;margin-bottom:16px">
+          <li>每个重要任务完成后</li>
+          <li>合并到 main 之前</li>
+          <li>卡住时（换个视角）</li>
+        </ul>
+        <table>
+          <thead><tr><th>问题等级</th><th>处理方式</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-red">Critical 严重</span></td><td>立即修复，不继续</td></tr>
+            <tr><td><span class="badge badge-yellow">Important 重要</span></td><td>继续之前修复</td></tr>
+            <tr><td><span class="badge badge-blue">Minor 小问题</span></td><td>记录，稍后处理</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3>receiving-code-review — 接收审查</h3>
+        <div class="callout" style="font-size:14px;margin-bottom:12px">
+          <strong>核心原则：</strong>技术正确性 > 社交舒适度
+        </div>
+        <div style="background:rgba(255,95,87,.08);border:1px solid rgba(255,95,87,.3);border-radius:6px;padding:12px 14px;margin-bottom:8px;font-size:13px">
+          <strong style="color:var(--red)">❌ 禁止</strong><br>
+          <span class="dim">"好观点！让我立刻修改..."（敷衍）<br>
+          收到反馈立刻全部接受（盲目执行）</span>
+        </div>
+        <div style="background:rgba(0,185,107,.08);border:1px solid rgba(0,185,107,.3);border-radius:6px;padding:12px 14px;font-size:13px">
+          <strong style="color:var(--green)">✓ 正确做法</strong><br>
+          <span class="dim">
+            1. 完整阅读，不急于回应<br>
+            2. 验证建议是否适合本项目<br>
+            3. 不明确的点先问清楚<br>
+            4. 错误的建议，用技术理由反驳<br>
+            5. 一次修改一项，逐个测试
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 14 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">技能详解 09</div>
+    <h2>中国特色技能（自动触发）</h2>
+    <p style="margin-bottom:20px">当 AI 检测到中文项目特征时，自动启用对应的中文技能，无需手动指定。</p>
+    <div class="grid-2">
+      <div>
+        <h3>自动触发条件</h3>
+        <table>
+          <thead><tr><th>检测到</th><th>启用技能</th></tr></thead>
+          <tbody>
+            <tr><td>中文注释 / 中文 README</td><td>中文系列全部</td></tr>
+            <tr><td>commit 历史有中文</td><td>chinese-commit-conventions</td></tr>
+            <tr><td>使用 Gitee / Coding</td><td>chinese-git-workflow</td></tr>
+            <tr><td>用户用中文沟通</td><td>所有输出使用中文</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3>中文 Commit 规范</h3>
+        <pre style="font-size:13px;line-height:1.8">feat(用户模块): 添加按名称搜索功能
+fix(登录): 修复邮箱验证不通过的问题
+docs: 更新 API 接口文档
+refactor(数据库): 优化查询性能
+test(搜索): 添加分页场景测试
+chore: 升级依赖版本</pre>
+        <p class="dim" style="font-size:13px">格式：类型(范围): 简短描述</p>
+      </div>
+    </div>
+    <div class="callout mt16" style="font-size:14px">
+      <strong>4 个中文技能：</strong>
+      <span class="badge badge-green">中文 commit 规范</span>
+      <span class="badge badge-blue">中文代码审查风格</span>
+      <span class="badge badge-yellow">Gitee/Coding 工作流</span>
+      <span class="badge badge-purple">中文文档规范</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 15 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">核心原则</div>
+    <h2>五大原则，随时记住</h2>
+    <div class="flow" style="gap:12px;margin-top:8px">
+      <div class="flow-item" style="padding:18px 22px;border-color:var(--green)">
+        <div class="flow-num" style="font-size:18px;width:36px;height:36px">1</div>
+        <div>
+          <div class="flow-text" style="font-size:17px"><strong>设计先于编码</strong></div>
+          <div class="flow-sub" style="font-size:14px">没有批准的设计，不写代码</div>
+        </div>
+      </div>
+      <div class="flow-item" style="padding:18px 22px;border-color:var(--blue)">
+        <div class="flow-num" style="font-size:18px;width:36px;height:36px;background:var(--blue)">2</div>
+        <div>
+          <div class="flow-text" style="font-size:17px"><strong>测试先于实现</strong></div>
+          <div class="flow-sub" style="font-size:14px">没有失败的测试，不写生产代码</div>
+        </div>
+      </div>
+      <div class="flow-item" style="padding:18px 22px;border-color:var(--red)">
+        <div class="flow-num" style="font-size:18px;width:36px;height:36px;background:var(--red)">3</div>
+        <div>
+          <div class="flow-text" style="font-size:17px"><strong>根因先于修复</strong></div>
+          <div class="flow-sub" style="font-size:14px">不做根因调查，不许提修复方案</div>
+        </div>
+      </div>
+      <div class="flow-item" style="padding:18px 22px;border-color:var(--yellow)">
+        <div class="flow-num" style="font-size:18px;width:36px;height:36px;background:var(--yellow);color:#000">4</div>
+        <div>
+          <div class="flow-text" style="font-size:17px"><strong>证据先于结论</strong></div>
+          <div class="flow-sub" style="font-size:14px">没有验证证据，不许宣称完成</div>
+        </div>
+      </div>
+      <div class="flow-item" style="padding:18px 22px;border-color:var(--purple)">
+        <div class="flow-num" style="font-size:18px;width:36px;height:36px;background:var(--purple)">5</div>
+        <div>
+          <div class="flow-text" style="font-size:17px"><strong>质疑先于执行</strong></div>
+          <div class="flow-sub" style="font-size:14px">代码审查反馈先验证，再决定做不做</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 16 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">上手指南</div>
+    <h2>新手三阶段上手路径</h2>
+    <div class="grid-3">
+      <div class="card" style="border-color:var(--green)">
+        <h4>第一周：理解框架</h4>
+        <ul style="font-size:13px">
+          <li>读教程文档</li>
+          <li>了解 5 大类技能的用途</li>
+          <li>体验一次完整流程：<br>
+            brainstorming →<br>
+            writing-plans →<br>
+            executing-plans</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:var(--blue)">
+        <h4>第二周：三个核心习惯</h4>
+        <ul style="font-size:13px">
+          <li>🔴 写代码前先写测试（TDD）</li>
+          <li>🔍 遇到 bug 先找根因</li>
+          <li>✓ 说"完成"前先跑验证</li>
+        </ul>
+        <p style="font-size:12px;margin-top:10px;color:var(--text-dim)">这三个习惯是核心，其他技能都是围绕这三个展开的。</p>
+      </div>
+      <div class="card" style="border-color:var(--yellow)">
+        <h4>第三周：提升效率</h4>
+        <ul style="font-size:13px">
+          <li>用 subagent-driven-dev 让 AI 自动跑</li>
+          <li>用 git-worktrees 隔离功能分支</li>
+          <li>遇到多个独立问题用 parallel-agents</li>
+          <li>中文项目确保有中文 README</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout mt24" style="font-size:15px">
+      <strong>给团队的建议：</strong>不需要一次掌握所有 24 个技能。先把<br>
+      <span class="badge badge-green">brainstorming</span>
+      <span class="badge badge-blue">TDD</span>
+      <span class="badge badge-yellow">verification</span>
+      <span class="badge badge-red">systematic-debugging</span>
+      这 4 个用好，收益已经非常显著了。
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 17 ══════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-tag">常见问题</div>
+    <h2>Q &amp; A</h2>
+    <div class="scroll-content">
+      <div class="two-col" style="gap:20px">
+        <div>
+          <div class="callout blue" style="margin-bottom:14px;font-size:14px">
+            <strong>Q：技能需要手动触发吗？</strong><br>
+            A：大多数情况是自动的。using-superpowers 在对话开始时生效，AI 根据任务类型自动调用合适的技能。你也可以直接说"帮我做头脑风暴"来手动触发。
+          </div>
+          <div class="callout blue" style="margin-bottom:14px;font-size:14px">
+            <strong>Q：所有功能都要走完整流程吗？太慢了？</strong><br>
+            A：不是。一次性原型、配置文件修改、简单注释修改不强制。凡是要进 main 分支的生产代码，建议遵守完整流程。
+          </div>
+          <div class="callout blue" style="font-size:14px">
+            <strong>Q：TDD 真的更快吗？</strong><br>
+            A：短期多花 10-20 分钟，但不写测试的代价是上线后调试 2-3 小时。长期来看，TDD 是净赚的。
+          </div>
+        </div>
+        <div>
+          <div class="callout blue" style="margin-bottom:14px;font-size:14px">
+            <strong>Q：subagent-driven 和 executing-plans 怎么选？</strong><br>
+            A：想快速推进 → subagent-driven；想每步亲自确认 → executing-plans；不支持子智能体的平台 → 只能 executing-plans。
+          </div>
+          <div class="callout blue" style="margin-bottom:14px;font-size:14px">
+            <strong>Q：可以添加自己的技能吗？</strong><br>
+            A：可以，用 writing-skills 技能创建团队专属技能。比如"所有接口必须有 OpenAPI 文档"、"代码必须通过安全扫描"等。
+          </div>
+          <div class="callout blue" style="font-size:14px">
+            <strong>Q：中文技能怎么启用？</strong><br>
+            A：项目有中文注释/README 或 commit 历史有中文时自动启用。建议中文项目确保 README 是中文的。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ SLIDE 18 ══════════════════════════════ -->
+  <div class="slide slide-cover">
+    <div class="slide-tag">总结</div>
+    <h1>让 AI 真正<br><span class="accent">可靠地</span>做工程</h1>
+    <p class="subtitle mt16">
+      Superpowers 不是让 AI 更聪明，<br>
+      而是让 AI 更<strong style="color:#fff">有规矩</strong>。
+    </p>
+    <div class="spacer"></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px">
+      <div style="text-align:center;padding:16px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:24px;color:var(--green)">设计</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">先于编码</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:24px;color:var(--blue)">测试</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">先于实现</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:24px;color:var(--red)">根因</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">先于修复</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:24px;color:var(--yellow)">证据</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">先于结论</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:24px;color:var(--purple)">质疑</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">先于执行</div>
+      </div>
+    </div>
+    <p class="dim" style="font-size:13px">
+      文档：docs/superpowers-tutorial.md &nbsp;·&nbsp;
+      技能目录：.claude/skills/ &nbsp;·&nbsp;
+      开源：github.com/obra/superpowers
+    </p>
+  </div>
+
+</div>
+
+<!-- Nav -->
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)" disabled>← 上一页</button>
+  <button id="nextBtn" onclick="navigate(1)">下一页 →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  function updateUI() {
+    document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('progressBar').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+  }
+
+  function navigate(dir) {
+    if (dir === 1 && current >= total - 1) return;
+    if (dir === -1 && current <= 0) return;
+
+    // 隐藏当前幻灯片：清除所有内联样式，让 CSS display:none 生效
+    const old = slides[current];
+    old.classList.remove('active');
+    old.style.cssText = '';
+
+    current += dir;
+    const next = slides[current];
+
+    // 清除上次访问遗留的内联样式，设置进入动画起点
+    next.style.cssText = '';
+    next.style.display = 'flex';
+    next.style.opacity = '0';
+    next.style.transform = dir === 1 ? 'translateX(40px)' : 'translateX(-40px)';
+    next.style.transition = 'none';
+
+    // 强制 reflow，确保浏览器记录起点位置后再开启过渡
+    next.offsetHeight;
+
+    requestAnimationFrame(() => {
+      next.style.transition = 'opacity .35s ease, transform .35s ease';
+      next.style.transform = 'translateX(0)';
+      next.style.opacity = '1';
+      next.classList.add('active');
+    });
+    updateUI();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   navigate(-1);
+  });
+
+  updateUI();
+</script>
+</body>
+</html>

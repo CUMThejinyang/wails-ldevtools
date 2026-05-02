@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"devtools/internal/apidebug"
 	"devtools/internal/cleaner"
 	"devtools/internal/codec"
 	"devtools/internal/envreg"
@@ -35,6 +36,7 @@ type AppConfig struct {
 	FtpServer   ftpserver.Config     `json:"ftpServer"`
 	SftpServer  ftpserver.SFTPConfig `json:"sftpServer"`
 	PortViewer  PortViewerPrefs      `json:"portViewer"`
+	ApiDebugger apidebug.ApiGlobalConfig `json:"apiDebugger"`
 }
 
 // App 应用结构体
@@ -120,6 +122,7 @@ func defaultConfig() AppConfig {
 			Family:       "all",
 			States:       []string{},
 		},
+		ApiDebugger: apidebug.DefaultConfig(),
 	}
 }
 
@@ -506,4 +509,27 @@ func (a *App) GetPortViewerPrefs() PortViewerPrefs {
 func (a *App) SavePortViewerPrefs(prefs PortViewerPrefs) error {
 	a.config.PortViewer = prefs
 	return a.saveConfig()
+}
+
+// ── API Debugger ──
+
+func (a *App) GetApiConfig() apidebug.ApiGlobalConfig {
+	return a.config.ApiDebugger
+}
+
+func (a *App) SaveApiConfig(cfg apidebug.ApiGlobalConfig) error {
+	a.config.ApiDebugger = cfg
+	return a.saveConfig()
+}
+
+func (a *App) ReadTextFile(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func (a *App) WriteTextFile(path, content string) error {
+	return os.WriteFile(path, []byte(content), 0644)
 }
