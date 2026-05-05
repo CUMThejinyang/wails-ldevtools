@@ -29,13 +29,13 @@ type PortViewerPrefs struct {
 
 // AppConfig 整个应用的配置
 type AppConfig struct {
-	Cleaner     cleaner.Settings     `json:"cleaner"`
-	Sync        syncer.Config        `json:"sync"`
-	Theme       string               `json:"theme"`
-	LocalServer httpserver.Config    `json:"localServer"`
-	FtpServer   ftpserver.Config     `json:"ftpServer"`
-	SftpServer  ftpserver.SFTPConfig `json:"sftpServer"`
-	PortViewer  PortViewerPrefs      `json:"portViewer"`
+	Cleaner     cleaner.Settings         `json:"cleaner"`
+	Sync        syncer.Config            `json:"sync"`
+	Theme       string                   `json:"theme"`
+	LocalServer httpserver.Config        `json:"localServer"`
+	FtpServer   ftpserver.Config         `json:"ftpServer"`
+	SftpServer  ftpserver.SFTPConfig     `json:"sftpServer"`
+	PortViewer  PortViewerPrefs          `json:"portViewer"`
 	ApiDebugger apidebug.ApiGlobalConfig `json:"apiDebugger"`
 }
 
@@ -512,6 +512,10 @@ func (a *App) SavePortViewerPrefs(prefs PortViewerPrefs) error {
 }
 
 // ── API Debugger ──
+
+func (a *App) SendHttpRequest(params apidebug.HttpRequestParams) (apidebug.HttpResponse, error) {
+	return apidebug.SendHttpRequest(params)
+}
 
 func (a *App) GetApiConfig() apidebug.ApiGlobalConfig {
 	return a.config.ApiDebugger

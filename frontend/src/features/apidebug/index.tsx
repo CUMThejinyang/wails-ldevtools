@@ -1,25 +1,25 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { ApiOutlined, SettingOutlined, CloudUploadOutlined, CloudDownloadOutlined } from '@ant-design/icons'
-import { Button, Dropdown, message } from 'antd'
+import { Button, Dropdown } from 'antd'
 import PageShell from '@/components/layout/PageShell'
 import SectionCard from '@/components/layout/SectionCard'
+import { useMessage } from '@/hooks/useMessage'
 import { bridge, generateId } from '@/services/bridge'
-import type { ApiRequest, ApiGlobalConfig, ApiCollection, ApiKvPair, HistoryEntry, ResponseSnapshot } from '@/types'
+import type { ApiRequest, ApiGlobalConfig, ApiCollection, ApiKvPair, HistoryEntry } from '@/types'
 import { useApiRequest } from './hooks/useApiRequest'
 import UrlBar from './components/UrlBar'
 import RequestPanel from './components/RequestPanel'
 import ResponsePanel from './components/ResponsePanel'
 import CollectionTree from './components/CollectionTree'
-import HistoryList from './components/HistoryList'
 import EnvManager from './components/EnvManager'
 import HeaderPreview from './components/HeaderPreview'
 import WebSocketPanel from './components/WebSocketPanel'
 import { importPostmanCollection, exportPostmanCollection } from './utils/import-export'
 
-function createDefaultRequest(): ApiRequest {
+function createDefaultRequest(name = ''): ApiRequest {
   return {
     id: generateId(),
-    name: '',
+    name,
     method: 'GET',
     url: '',
     params: [],
@@ -29,29 +29,120 @@ function createDefaultRequest(): ApiRequest {
   }
 }
 
+function findRequestById(items: (ApiCollection | ApiRequest)[], id: string): ApiRequest | null {
+  for (const item of items) {
+    if ('children' in item) {
+      const found = findRequestById(item.children, id)
+      if (found) return found
+    } else if (item.id === id) {
+      return item
+    }
+  }
+  return null
+}
+
+function updateNodeChildren(
+  items: (ApiCollection | ApiRequest)[],
+  nodeId: string,
+  updater: (children: (ApiCollection | ApiRequest)[]) => (ApiCollection | ApiRequest)[],
+): (ApiCollection | ApiRequest)[] {
+  return items.map((item) => {
+    if (!('children' in item)) return item
+    if (item.id === nodeId) {
+      return { ...item, children: updater(item.children) }
+    }
+    return { ...item, children: updateNodeChildren(item.children, nodeId, updater) }
+  })
+}
+
+function updateRequestInTree(
+  items: (ApiCollection | ApiRequest)[],
+  requestId: string,
+  updater: (request: ApiRequest) => ApiRequest,
+): (ApiCollection | ApiRequest)[] {
+  return items.map((item) => {
+    if ('children' in item) {
+      return { ...item, children: updateRequestInTree(item.children, requestId, updater) }
+    }
+    return item.id === requestId ? updater(item) : item
+  })
+}
+
+function removeNode(items: (ApiCollection | ApiRequest)[], id: string): (ApiCollection | ApiRequest)[] {
+  return items
+    .filter((item) => item.id !== id)
+    .map((item) => ('children' in item ? { ...item, children: removeNode(item.children, id) } : item))
+}
+
 export default function ApiDebugPage() {
   const [config, setConfig] = useState<ApiGlobalConfig>({
     globalHeaders: [], environments: [], activeEnvId: null, collections: [], historyLimit: 100,
   })
   const [request, setRequest] = useState<ApiRequest>(createDefaultRequest)
   const [history, setHistory] = useState<HistoryEntry[]>([])
+  const msg = useMessage()
   const [envOpen, setEnvOpen] = useState(false)
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null)
   const [isWsMode, setIsWsMode] = useState(false)
+  const [sidebarWidth, setSidebarWidth] = useState(240)
+  const [dividerHover, setDividerHover] = useState(false)
+  const dragging = useRef(false)
+  const startX = useRef(0)
+  const startWidth = useRef(0)
+
+  const onDividerDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    dragging.current = true
+    startX.current = e.clientX
+    startWidth.current = sidebarWidth
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    const onMove = (ev: MouseEvent) => {
+      if (!dragging.current) return
+      const delta = ev.clientX - startX.current
+      setSidebarWidth(Math.max(180, Math.min(500, startWidth.current + delta)))
+    }
+    const onUp = () => {
+      dragging.current = false
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }, [sidebarWidth])
 
   const { loading, response, error, send } = useApiRequest()
 
-  // 加载配置
   useEffect(() => {
     bridge.getApiConfig().then((c) => {
-      setConfig(c)
+      setConfig({
+        globalHeaders: c.globalHeaders || [],
+        environments: c.environments || [],
+        activeEnvId: c.activeEnvId,
+        collections: c.collections || [],
+        historyLimit: c.historyLimit || 100,
+      })
     }).catch(() => {})
   }, [])
 
-  // 发送请求
+  const saveConfig = useCallback(async (patch: Partial<ApiGlobalConfig>) => {
+    const next = { ...config, ...patch }
+    setConfig(next)
+    try { await bridge.saveApiConfig(next) } catch {}
+  }, [config])
+
+  const handleRequestChange = useCallback((next: ApiRequest) => {
+    setRequest(next)
+    if (!activeRequestId) return
+    const collections = updateRequestInTree(config.collections, activeRequestId, () => ({ ...next })) as ApiCollection[]
+    saveConfig({ collections })
+  }, [activeRequestId, config.collections, saveConfig])
+
   const handleSend = useCallback(async () => {
     if (!request.url) {
-      message.warning('请输入 URL')
+      msg.warning('请输入 URL')
       return
     }
     if (request.url.startsWith('ws://') || request.url.startsWith('wss://')) {
@@ -60,7 +151,6 @@ export default function ApiDebugPage() {
     }
     setIsWsMode(false)
     const resp = await send(request, config, config.activeEnvId)
-    // 使用 send 返回的最新 response 保存历史
     if (resp) {
       setHistory((prev) => {
         const entry: HistoryEntry = {
@@ -75,63 +165,60 @@ export default function ApiDebugPage() {
     }
   }, [request, config, send])
 
-  // 保存配置
-  const saveConfig = useCallback(async (patch: Partial<ApiGlobalConfig>) => {
-    const next = { ...config, ...patch }
-    setConfig(next)
-    try { await bridge.saveApiConfig(next) } catch {}
-  }, [config])
-
-  // 集合操作
   const handleAddCollection = useCallback((name: string) => {
     const col: ApiCollection = { id: generateId(), name, children: [], headers: [] }
     saveConfig({ collections: [...config.collections, col] })
-  }, [config, saveConfig])
+  }, [config.collections, saveConfig])
 
-  // 保存当前请求到集合
-  const handleSaveToCollection = useCallback(() => {
-    if (config.collections.length === 0) {
-      message.warning('请先创建集合')
-      return
+  const handleAddFolder = useCallback((parentId: string, name: string) => {
+    const folder: ApiCollection = { id: generateId(), name, children: [], headers: [] }
+    const collections = updateNodeChildren(config.collections, parentId, (children) => [...children, folder]) as ApiCollection[]
+    saveConfig({ collections })
+  }, [config.collections, saveConfig])
+
+  const handleAddRequest = useCallback((parentId: string, name: string) => {
+    const nextRequest = createDefaultRequest(name || '新请求')
+    const collections = updateNodeChildren(config.collections, parentId, (children) => [...children, nextRequest]) as ApiCollection[]
+    setRequest(nextRequest)
+    setActiveRequestId(nextRequest.id)
+    saveConfig({ collections })
+  }, [config.collections, saveConfig])
+
+  const handleDeleteItem = useCallback((id: string) => {
+    const collections = removeNode(config.collections, id) as ApiCollection[]
+    if (activeRequestId === id) {
+      setRequest(createDefaultRequest())
+      setActiveRequestId(null)
     }
-    const firstCol = config.collections[0]
-    const savedReq = { ...request, id: generateId(), name: request.name || request.url }
-    const updatedCollections = config.collections.map((c) => {
-      if (c.id === firstCol.id) {
-        return { ...c, children: [...c.children, savedReq] }
-      }
-      return c
-    })
-    saveConfig({ collections: updatedCollections })
-    message.success('已保存到集合')
-  }, [request, config, saveConfig])
+    saveConfig({ collections })
+  }, [activeRequestId, config.collections, saveConfig])
 
-  // 从集合加载请求
-  const handleSelectRequest = useCallback((id: string) => {
-    const findReq = (items: (ApiCollection | ApiRequest)[]): ApiRequest | null => {
-      for (const item of items) {
+  const handleRenameItem = useCallback((id: string, name: string) => {
+    const renameIn = (items: (ApiCollection | ApiRequest)[]): (ApiCollection | ApiRequest)[] =>
+      items.map((item) => {
         if ('children' in item) {
-          const found = findReq(item.children)
-          if (found) return found
-        } else if (item.id === id) {
-          return item
+          if (item.id === id) return { ...item, name }
+          return { ...item, children: renameIn(item.children) }
         }
-      }
-      return null
-    }
-    const found = findReq(config.collections)
-    if (found) {
-      setRequest({ ...found })
-      setActiveRequestId(id)
-    }
+        return item.id === id ? { ...item, name } : item
+      })
+    const collections = renameIn(config.collections) as ApiCollection[]
+    if (activeRequestId === id) setRequest((r) => ({ ...r, name }))
+    saveConfig({ collections })
+  }, [activeRequestId, config.collections, saveConfig])
+
+  const handleSelectRequest = useCallback((id: string) => {
+    const found = findRequestById(config.collections, id)
+    if (!found) return
+    setRequest({ ...found })
+    setActiveRequestId(id)
   }, [config.collections])
 
-  // Header 合并预览
   const mergedHeaders = useMemo(() => {
     const result: { key: string; value: string; source: '请求级' | '环境' | '集合' | '全局' }[] = []
 
-    const addAll = (items: ApiKvPair[], source: '请求级' | '环境' | '集合' | '全局') => {
-      items.filter(i => i.enabled && i.key).forEach(i => result.push({ key: i.key, value: i.value, source }))
+    const addAll = (items: ApiKvPair[] | null | undefined, source: '请求级' | '环境' | '集合' | '全局') => {
+      if (items) items.filter(i => i.enabled && i.key).forEach(i => result.push({ key: i.key, value: i.value, source }))
     }
 
     addAll(config.globalHeaders, '全局')
@@ -140,13 +227,9 @@ export default function ApiDebugPage() {
       if (env) addAll(env.headers, '环境')
     }
     addAll(request.headers, '请求级')
-    if (request.auth?.type === 'bearer' && request.auth.token) {
-      result.push({ key: 'Authorization', value: `Bearer ${request.auth.token}`, source: '请求级' })
-    }
     return result
-  }, [config, request])
+  }, [config, request.headers])
 
-  // WebSocket 模式
   if (isWsMode) {
     return (
       <PageShell title={<><ApiOutlined style={{ color: 'var(--color-primary)', marginRight: 8 }} />API 调试器</>}>
@@ -156,11 +239,10 @@ export default function ApiDebugPage() {
             url={request.url}
             environments={config.environments}
             activeEnvId={config.activeEnvId}
-            onMethodChange={(m) => setRequest(r => ({ ...r, method: m }))}
-            onUrlChange={(url) => setRequest(r => ({ ...r, url }))}
+            onMethodChange={(m) => handleRequestChange({ ...request, method: m })}
+            onUrlChange={(url) => handleRequestChange({ ...request, url })}
             onEnvChange={(id) => saveConfig({ activeEnvId: id })}
             onSend={() => {}}
-            onSave={() => {}}
             loading={false}
           />
           <div style={{ flex: 1, overflow: 'hidden' }}>
@@ -187,9 +269,9 @@ export default function ApiDebugPage() {
                     const result = importPostmanCollection(text)
                     const newCol: ApiCollection = { id: generateId(), name: result.name, children: result.requests, headers: [] }
                     saveConfig({ collections: [...config.collections, newCol] })
-                    message.success(`已导入 ${result.requests.length} 个请求`)
+                    msg.success(`已导入 ${result.requests.length} 个请求`)
                   } catch (err: any) {
-                    message.error('导入失败: ' + err.message)
+                    msg.error('导入失败: ' + err.message)
                   }
                 }).catch(() => {})
               }},
@@ -198,7 +280,7 @@ export default function ApiDebugPage() {
                 if (path) {
                   const json = exportPostmanCollection(config.collections)
                   await bridge.writeTextFile(path, json)
-                  message.success('导出成功')
+                  msg.success('导出成功')
                 }
               }},
             ],
@@ -209,39 +291,24 @@ export default function ApiDebugPage() {
       }
     >
       <div style={styles.layout}>
-        <div style={styles.sidebar}>
+        <div style={{ ...styles.sidebar, width: sidebarWidth, minWidth: sidebarWidth }}>
           <CollectionTree
             collections={config.collections}
             activeRequestId={activeRequestId}
             onSelectRequest={handleSelectRequest}
             onAddCollection={handleAddCollection}
-            onAddFolder={(parentId, name) => {
-              const updateTree = (items: (ApiCollection | ApiRequest)[]): (ApiCollection | ApiRequest)[] =>
-                items.map(item => {
-                  if ('children' in item && item.id === parentId)
-                    return { ...item, children: [...item.children, { id: generateId(), name, children: [], headers: [] }] }
-                  if ('children' in item)
-                    return { ...item, children: updateTree(item.children) }
-                  return item
-                })
-              saveConfig({ collections: updateTree(config.collections) as ApiCollection[] })
-            }}
-            onDeleteItem={(id) => {
-              const removeFrom = (items: (ApiCollection | ApiRequest)[]): (ApiCollection | ApiRequest)[] =>
-                items.filter(item => {
-                  if (item.id === id) return false
-                  if ('children' in item) return { ...item, children: removeFrom(item.children) }
-                  return true
-                })
-              saveConfig({ collections: removeFrom(config.collections) as ApiCollection[] })
-            }}
-          />
-          <HistoryList
-            history={history}
-            onSelect={(entry) => { setRequest({ ...entry.request }); setActiveRequestId(null) }}
-            onClear={() => setHistory([])}
+            onAddFolder={handleAddFolder}
+            onAddRequest={handleAddRequest}
+            onDeleteItem={handleDeleteItem}
+            onRenameItem={handleRenameItem}
           />
         </div>
+        <div
+          style={{ ...styles.divider, background: dividerHover ? 'var(--color-primary)' : 'transparent', transition: 'background 0.15s' }}
+          onMouseDown={onDividerDown}
+          onMouseEnter={() => setDividerHover(true)}
+          onMouseLeave={() => setDividerHover(false)}
+        />
         <div style={styles.main}>
           <SectionCard title="请求" fill>
             <UrlBar
@@ -249,14 +316,13 @@ export default function ApiDebugPage() {
               url={request.url}
               environments={config.environments}
               activeEnvId={config.activeEnvId}
-              onMethodChange={(m) => setRequest(r => ({ ...r, method: m }))}
-              onUrlChange={(url) => setRequest(r => ({ ...r, url }))}
+              onMethodChange={(m) => handleRequestChange({ ...request, method: m })}
+              onUrlChange={(url) => handleRequestChange({ ...request, url })}
               onEnvChange={(id) => saveConfig({ activeEnvId: id })}
               onSend={handleSend}
-              onSave={handleSaveToCollection}
               loading={loading}
             />
-            <RequestPanel request={request} onChange={setRequest} />
+            <RequestPanel request={request} onChange={handleRequestChange} />
             <div style={{ padding: '4px 0' }}>
               <HeaderPreview merged={mergedHeaders} />
             </div>
@@ -280,6 +346,7 @@ export default function ApiDebugPage() {
 
 const styles: Record<string, React.CSSProperties> = {
   layout: { display: 'flex', height: '100%', overflow: 'hidden' },
-  sidebar: { width: 240, minWidth: 240, display: 'flex', flexDirection: 'column', borderRight: '0.5px solid var(--color-border)', background: 'var(--color-bg-2)' },
-  main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 },
+  sidebar: { display: 'flex', flexDirection: 'column', borderRight: 'none', background: 'var(--color-bg-2)' },
+  divider: { width: 4, cursor: 'col-resize', flexShrink: 0, zIndex: 10, position: 'relative' as const },
+  main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, borderLeft: '0.5px solid var(--color-border)' },
 }

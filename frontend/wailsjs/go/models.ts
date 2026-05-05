@@ -1,3 +1,214 @@
+export namespace apidebug {
+	
+	export class KvPair {
+	    key: string;
+	    value: string;
+	    enabled: boolean;
+	    description?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new KvPair(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.key = source["key"];
+	        this.value = source["value"];
+	        this.enabled = source["enabled"];
+	        this.description = source["description"];
+	    }
+	}
+	export class ApiCollection {
+	    id: string;
+	    name: string;
+	    children: number[][];
+	    headers: KvPair[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ApiCollection(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.children = source["children"];
+	        this.headers = this.convertValues(source["headers"], KvPair);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class ApiEnv {
+	    id: string;
+	    name: string;
+	    variables: KvPair[];
+	    headers: KvPair[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ApiEnv(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.variables = this.convertValues(source["variables"], KvPair);
+	        this.headers = this.convertValues(source["headers"], KvPair);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class ApiGlobalConfig {
+	    globalHeaders: KvPair[];
+	    environments: ApiEnv[];
+	    activeEnvId: string;
+	    collections: ApiCollection[];
+	    historyLimit: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ApiGlobalConfig(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.globalHeaders = this.convertValues(source["globalHeaders"], KvPair);
+	        this.environments = this.convertValues(source["environments"], ApiEnv);
+	        this.activeEnvId = source["activeEnvId"];
+	        this.collections = this.convertValues(source["collections"], ApiCollection);
+	        this.historyLimit = source["historyLimit"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class HttpMultipartItem {
+	    key: string;
+	    value: string;
+	    kind: string;
+	    filePath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new HttpMultipartItem(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.key = source["key"];
+	        this.value = source["value"];
+	        this.kind = source["kind"];
+	        this.filePath = source["filePath"];
+	    }
+	}
+	export class HttpRequestParams {
+	    method: string;
+	    url: string;
+	    headers: Record<string, string>;
+	    body: string;
+	    multipartItems: HttpMultipartItem[];
+	
+	    static createFrom(source: any = {}) {
+	        return new HttpRequestParams(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.method = source["method"];
+	        this.url = source["url"];
+	        this.headers = source["headers"];
+	        this.body = source["body"];
+	        this.multipartItems = this.convertValues(source["multipartItems"], HttpMultipartItem);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class HttpResponse {
+	    status: number;
+	    statusText: string;
+	    headers: Record<string, string>;
+	    body: string;
+	    size: number;
+	    durationMs: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new HttpResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.status = source["status"];
+	        this.statusText = source["statusText"];
+	        this.headers = source["headers"];
+	        this.body = source["body"];
+	        this.size = source["size"];
+	        this.durationMs = source["durationMs"];
+	    }
+	}
+
+}
+
 export namespace cleaner {
 	
 	export class FolderConfig {

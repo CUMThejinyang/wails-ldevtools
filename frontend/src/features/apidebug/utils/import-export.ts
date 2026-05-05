@@ -28,7 +28,7 @@ export function importPostmanCollection(json: string): { name: string; requests:
             } else if (item.request.body.mode === 'urlencoded') {
               req.body = { type: 'urlencoded', urlencodedItems: (item.request.body.urlencoded || []).map((p: any) => ({ key: p.key, value: p.value, enabled: true })) }
             } else if (item.request.body.mode === 'formdata') {
-              req.body = { type: 'form-data', formItems: (item.request.body.formdata || []).map((p: any) => ({ key: p.key, value: p.value, enabled: true, type: 'text' })) }
+              req.body = { type: 'form-data', formItems: (item.request.body.formdata || []).map((p: any) => ({ key: p.key, value: p.src || p.value || '', enabled: true, type: p.type === 'file' ? 'file' : 'text', filePath: p.src || p.value || '' })) }
             }
           }
 

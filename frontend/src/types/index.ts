@@ -278,6 +278,32 @@ export interface SFTPStatus {
   urls: string[]
 }
 
+// ── API Debugger HTTP Proxy ──
+
+export interface HttpMultipartItem {
+  key: string
+  value: string
+  kind: 'text' | 'file'
+  filePath?: string
+}
+
+export interface HttpRequestParams {
+  method: string
+  url: string
+  headers: Record<string, string>
+  body: string
+  multipartItems?: HttpMultipartItem[]
+}
+
+export interface HttpResponseData {
+  status: number
+  statusText: string
+  headers: Record<string, string>
+  body: string
+  size: number
+  durationMs: number
+}
+
 // ── API Debugger ──
 
 export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS'

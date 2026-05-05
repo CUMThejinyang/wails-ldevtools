@@ -12,7 +12,9 @@
       "Bash(npm view:*)",
       "Bash(pnpm add:*)",
       "Bash(openspec new:*)",
-      "PowerShell(wails build *)"
+      "PowerShell(wails build *)",
+      "Bash(D:\\\\Environment\\\\Python\\\\Python311\\\\Scripts\\\\cs.EXE)",
+      "PowerShell(& \"D:\\\\Environment\\\\Python\\\\Python311\\\\Scripts\\\\cs.EXE\")"
     ]
   }
 }

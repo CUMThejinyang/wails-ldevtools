@@ -1,6 +1,6 @@
 // frontend/src/features/apidebug/components/UrlBar.tsx
 import { Select, Input, Button } from 'antd'
-import { SendOutlined, SaveOutlined } from '@ant-design/icons'
+import { SendOutlined } from '@ant-design/icons'
 import type { ApiMethod, ApiEnv } from '@/types'
 
 const METHOD_COLORS: Record<string, string> = {
@@ -17,11 +17,10 @@ interface UrlBarProps {
   onUrlChange: (url: string) => void
   onEnvChange: (id: string | null) => void
   onSend: () => void
-  onSave: () => void
   loading: boolean
 }
 
-export default function UrlBar({ method, url, environments, activeEnvId, onMethodChange, onUrlChange, onEnvChange, onSend, onSave, loading }: UrlBarProps) {
+export default function UrlBar({ method, url, environments, activeEnvId, onMethodChange, onUrlChange, onEnvChange, onSend, loading }: UrlBarProps) {
   return (
     <div style={styles.container}>
       <Select
@@ -53,9 +52,6 @@ export default function UrlBar({ method, url, environments, activeEnvId, onMetho
       />
       <Button type="primary" size="small" icon={<SendOutlined />} onClick={onSend} loading={loading}>
         发送
-      </Button>
-      <Button size="small" icon={<SaveOutlined />} onClick={onSave}>
-        保存
       </Button>
     </div>
   )

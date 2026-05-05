@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
-import type { ApiRequest, ApiGlobalConfig, ResponseSnapshot, ApiKvPair } from '@/types'
+import type { ApiRequest, ApiGlobalConfig, ResponseSnapshot, ApiKvPair, HttpMultipartItem } from '@/types'
+import { bridge } from '@/services/bridge'
 
 function resolveTemplate(str: string, vars: ApiKvPair[]): string {
   return str.replace(/\{\{(\w+)\}\}/g, (_, name) => {
@@ -15,26 +16,63 @@ function mergeHeaders(
 ): Record<string, string> {
   const result: Record<string, string> = {}
 
-  const addAll = (items: ApiKvPair[], label: string) => {
+  const addAll = (items: ApiKvPair[]) => {
     items.filter(i => i.enabled && i.key).forEach(i => { result[i.key] = i.value })
   }
 
-  // 低优先级先加（全局 -> 环境 -> 请求级）
-  addAll(config.globalHeaders, '全局')
+  addAll(config.globalHeaders)
   if (activeEnvId) {
     const env = config.environments.find(e => e.id === activeEnvId)
-    if (env) addAll(env.headers, '环境')
+    if (env) addAll(env.headers)
   }
-  addAll(request.headers, '请求')
-
-  // Auth 处理
-  if (request.auth?.type === 'bearer' && request.auth.token) {
-    result['Authorization'] = `Bearer ${request.auth.token}`
-  } else if (request.auth?.type === 'basic' && request.auth.username) {
-    result['Authorization'] = 'Basic ' + btoa(`${request.auth.username}:${request.auth.password || ''}`)
-  }
+  addAll(request.headers)
 
   return result
+}
+
+function buildBody(request: ApiRequest, vars: ApiKvPair[]): { body: string; headers: Record<string, string>; multipartItems: HttpMultipartItem[] } {
+  const headers: Record<string, string> = {}
+
+  if (request.body?.type === 'json' && request.body.jsonContent) {
+    return {
+      body: resolveTemplate(request.body.jsonContent, vars),
+      headers: { 'Content-Type': 'application/json' },
+      multipartItems: [],
+    }
+  }
+
+  if (request.body?.type === 'form-data' && request.body.formItems) {
+    const multipartItems = request.body.formItems
+      .filter(f => f.enabled && f.key)
+      .map((f) => {
+        const resolvedValue = resolveTemplate(f.value, vars)
+        if (f.type === 'file') {
+          return { key: f.key, value: resolvedValue, kind: 'file' as const, filePath: f.filePath || resolvedValue }
+        }
+        return { key: f.key, value: resolvedValue, kind: 'text' as const }
+      })
+    return { body: '', headers: {}, multipartItems }
+  }
+
+  if (request.body?.type === 'urlencoded' && request.body.urlencodedItems) {
+    const usp = new URLSearchParams()
+    request.body.urlencodedItems.filter(i => i.enabled && i.key).forEach(i => {
+      usp.append(i.key, resolveTemplate(i.value, vars))
+    })
+    return {
+      body: usp.toString(),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      multipartItems: [],
+    }
+  }
+
+  if (request.body?.type === 'raw' && request.body.rawContent) {
+    const h: Record<string, string> = {}
+    if (request.body.rawContentType) h['Content-Type'] = request.body.rawContentType
+    return { body: resolveTemplate(request.body.rawContent, vars), headers: h, multipartItems: [] }
+  }
+
+  return { body: '', headers: {}, multipartItems: [] }
 }
 
 export function useApiRequest() {
@@ -51,8 +89,6 @@ export function useApiRequest() {
     setError(null)
     setResponse(null)
 
-    const startTime = performance.now()
-
     try {
       const env = activeEnvId ? config.environments.find(e => e.id === activeEnvId) : undefined
       const envVars = env?.variables || []
@@ -60,52 +96,28 @@ export function useApiRequest() {
 
       const headers = mergeHeaders(request, config, activeEnvId)
 
-      if (request.body?.type === 'json' && !headers['Content-Type']) {
-        headers['Content-Type'] = 'application/json'
-      } else if (request.body?.type === 'urlencoded' && !headers['Content-Type']) {
-        headers['Content-Type'] = 'application/x-www-form-urlencoded'
-      } else if (request.body?.type === 'raw' && request.body.rawContentType && !headers['Content-Type']) {
-        headers['Content-Type'] = request.body.rawContentType
-      }
-
       let finalUrl = resolvedUrl
       const enabledParams = request.params.filter(p => p.enabled && p.key)
       if (enabledParams.length > 0) {
-        const qs = enabledParams.map(p => `${encodeURIComponent(p.key)}=${encodeURIComponent(resolveTemplate(p.value, envVars))}`).join('&')
+        const qs = enabledParams.map(p =>
+          `${encodeURIComponent(p.key)}=${encodeURIComponent(resolveTemplate(p.value, envVars))}`
+        ).join('&')
         finalUrl += (finalUrl.includes('?') ? '&' : '?') + qs
       }
 
-      let body: BodyInit | undefined
-      if (request.body?.type === 'json' && request.body.jsonContent) {
-        body = resolveTemplate(request.body.jsonContent, envVars)
-      } else if (request.body?.type === 'form-data') {
-        const fd = new FormData()
-        request.body.formItems?.filter(f => f.enabled && f.key).forEach(f => {
-          fd.append(f.key, resolveTemplate(f.value, envVars))
-        })
-        body = fd
-        delete headers['Content-Type']
-      } else if (request.body?.type === 'urlencoded' && request.body.urlencodedItems) {
-        const usp = new URLSearchParams()
-        request.body.urlencodedItems.filter(i => i.enabled && i.key).forEach(i => {
-          usp.append(i.key, resolveTemplate(i.value, envVars))
-        })
-        body = usp.toString()
-      } else if (request.body?.type === 'raw' && request.body.rawContent) {
-        body = resolveTemplate(request.body.rawContent, envVars)
-      }
+      const { body, headers: bodyHeaders, multipartItems } = buildBody(request, envVars)
+      Object.assign(headers, bodyHeaders)
 
-      const fetchResponse = await fetch(finalUrl, {
+      const result = await bridge.sendHttpRequest({
         method: request.method,
+        url: finalUrl,
         headers,
-        body: request.method === 'GET' || request.method === 'HEAD' ? undefined : body,
+        body,
+        multipartItems,
       })
 
-      const responseHeaders: Record<string, string> = {}
-      fetchResponse.headers.forEach((v, k) => { responseHeaders[k] = v })
-
-      const cookies: { name: string; value: string; domain: string; path: string; httpOnly: boolean; secure: boolean }[] = []
-      const setCookieHeader = fetchResponse.headers.get('set-cookie')
+      const cookies: ResponseSnapshot['cookies'] = []
+      const setCookieHeader = result.headers['set-cookie']
       if (setCookieHeader) {
         const parts = setCookieHeader.split(';')
         const nv = parts[0].split('=')
@@ -120,18 +132,16 @@ export function useApiRequest() {
         })
       }
 
-      const responseText = await fetchResponse.text()
-      const endTime = performance.now()
-
       const snapshot: ResponseSnapshot = {
-        status: fetchResponse.status,
-        statusText: fetchResponse.statusText,
-        headers: responseHeaders,
-        body: responseText,
-        size: new Blob([responseText]).size,
-        durationMs: Math.round(endTime - startTime),
+        status: result.status,
+        statusText: result.statusText,
+        headers: result.headers,
+        body: result.body,
+        size: result.size,
+        durationMs: result.durationMs,
         cookies,
       }
+
       setResponse(snapshot)
       return snapshot
     } catch (err: any) {

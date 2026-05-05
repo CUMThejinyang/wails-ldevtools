@@ -18,6 +18,10 @@ export function ExportEnvFile(arg1, arg2) {
   return window['go']['main']['App']['ExportEnvFile'](arg1, arg2);
 }
 
+export function GetApiConfig() {
+  return window['go']['main']['App']['GetApiConfig']();
+}
+
 export function GetCleanerSettings() {
   return window['go']['main']['App']['GetCleanerSettings']();
 }
@@ -162,12 +166,20 @@ export function PreviewSync(arg1) {
   return window['go']['main']['App']['PreviewSync'](arg1);
 }
 
+export function ReadTextFile(arg1) {
+  return window['go']['main']['App']['ReadTextFile'](arg1);
+}
+
 export function ResolveSyncConflict(arg1) {
   return window['go']['main']['App']['ResolveSyncConflict'](arg1);
 }
 
 export function RestoreBackup(arg1) {
   return window['go']['main']['App']['RestoreBackup'](arg1);
+}
+
+export function SaveApiConfig(arg1) {
+  return window['go']['main']['App']['SaveApiConfig'](arg1);
 }
 
 export function SaveCleanerSettings(arg1) {
@@ -212,6 +224,10 @@ export function SelectFile(arg1) {
 
 export function SelectSaveFile(arg1) {
   return window['go']['main']['App']['SelectSaveFile'](arg1);
+}
+
+export function SendHttpRequest(arg1) {
+  return window['go']['main']['App']['SendHttpRequest'](arg1);
 }
 
 export function SetEnv(arg1, arg2, arg3, arg4) {
@@ -288,4 +304,8 @@ export function WindowSetAlwaysOnTop(arg1) {
 
 export function WindowToggleMaximise() {
   return window['go']['main']['App']['WindowToggleMaximise']();
+}
+
+export function WriteTextFile(arg1, arg2) {
+  return window['go']['main']['App']['WriteTextFile'](arg1, arg2);
 }

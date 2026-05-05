@@ -1,6 +1,8 @@
 import type {
   ApiGlobalConfig,
   BackupMeta,
+  HttpRequestParams,
+  HttpResponseData,
   BackupSnapshot,
   BatchSaveResult,
   CleanerSettings,
@@ -143,6 +145,7 @@ export const bridge = {
   savePortViewerPrefs: (prefs: PortViewerPrefs) => call<void>('SavePortViewerPrefs', prefs),
 
   // API Debugger
+  sendHttpRequest: (params: HttpRequestParams) => call<HttpResponseData>('SendHttpRequest', params),
   getApiConfig: () => call<ApiGlobalConfig>('GetApiConfig'),
   saveApiConfig: (cfg: ApiGlobalConfig) => call<void>('SaveApiConfig', cfg),
   readTextFile: (path: string) => call<string>('ReadTextFile', path),
