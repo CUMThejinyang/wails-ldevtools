@@ -78,7 +78,7 @@ export default function KvEditor({ items, onChange, keyPlaceholder = 'Key', valu
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  container: { display: 'flex', flexDirection: 'column', gap: 4 },
+  container: { display: 'flex', flexDirection: 'column', gap: 4, minHeight: 0 },
   row: { display: 'flex', gap: 6, alignItems: 'center' },
   keyInput: { width: 180 },
   valueInput: { flex: 1 },

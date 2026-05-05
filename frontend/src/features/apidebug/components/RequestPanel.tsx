@@ -145,35 +145,40 @@ export default function RequestPanel({ request, onChange }: RequestPanelProps) {
   return (
     <Tabs
       size="small"
+      style={styles.panel}
       items={[
         {
           key: 'params',
-          label: 'Params',
+          label: '参数',
           children: (
-            <KvEditor
-              items={request.params}
-              onChange={(items) => update({ params: items })}
-              keyPlaceholder="参数名"
-              valuePlaceholder="参数值"
-            />
+            <div style={styles.tabContent}>
+              <KvEditor
+                items={request.params}
+                onChange={(items) => update({ params: items })}
+                keyPlaceholder="参数名"
+                valuePlaceholder="参数值"
+              />
+            </div>
           ),
         },
         {
           key: 'headers',
-          label: 'Headers',
+          label: '请求头',
           children: (
-            <KvEditor
-              items={request.headers}
-              onChange={(items) => update({ headers: items })}
-              keyPlaceholder="Header 名"
-              valuePlaceholder="Header 值"
-              showDescription
-            />
+            <div style={styles.tabContent}>
+              <KvEditor
+                items={request.headers}
+                onChange={(items) => update({ headers: items })}
+                keyPlaceholder="Header 名"
+                valuePlaceholder="Header 值"
+                showDescription
+              />
+            </div>
           ),
         },
         {
           key: 'body',
-          label: 'Body',
+          label: '请求体',
           children: (
             <div style={styles.bodyContainer}>
               <Select
@@ -182,14 +187,16 @@ export default function RequestPanel({ request, onChange }: RequestPanelProps) {
                 size="small"
                 style={{ width: 160, marginBottom: 8 }}
                 options={[
-                  { value: 'none', label: 'none' },
+                  { value: 'none', label: '无' },
                   { value: 'json', label: 'JSON' },
                   { value: 'form-data', label: 'form-data' },
                   { value: 'urlencoded', label: 'x-www-form-urlencoded' },
                   { value: 'raw', label: 'Raw' },
                 ]}
               />
-              {renderBodyEditor()}
+              <div style={styles.tabContent}>
+                {renderBodyEditor()}
+              </div>
             </div>
           ),
         },
@@ -207,7 +214,9 @@ const editorOptions = {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  bodyContainer: { display: 'flex', flexDirection: 'column' },
+  panel: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  tabContent: { maxHeight: 'calc(50vh - 210px)', overflowY: 'auto', paddingRight: 2 },
+  bodyContainer: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   editorWrap: { border: '1px solid var(--color-border)', borderRadius: 6, overflow: 'hidden' },
   rawContainer: { display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minHeight: 120 },
   rawContentType: { background: 'var(--color-bg-1)', border: '1px solid var(--color-border)', color: 'var(--color-text-1)', borderRadius: 4, padding: '4px 8px', fontFamily: 'var(--code-font-family)', fontSize: 12 },

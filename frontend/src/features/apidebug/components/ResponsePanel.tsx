@@ -102,7 +102,7 @@ export default function ResponsePanel({ response, loading, error }: ResponsePane
                 </div>
                 <div style={styles.editorWrap}>
                   <Editor
-                    height="320px"
+                    height="calc(50vh - 230px)"
                     language={editorLanguage}
                     theme={dark ? 'vs-dark' : 'vs'}
                     value={bodyView === 'raw' ? response.body : filteredBody}
